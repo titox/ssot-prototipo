@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>SSoT · Runner</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  html, body { margin: 0; height: 100%; background: #0b1b3b; overflow: hidden; }
+  iframe { position: fixed; inset: 0; width: 100vw; height: 100vh; border: 0; background: #fff; }
+  /* Real macOS cursors (exported from AppKit): arrow while moving, pointing hand over a button */
+  #cur { position: fixed; left: 0; top: 0; z-index: 9; pointer-events: none;
+         transform: translate(715px, 445px); transition: transform .55s cubic-bezier(.4,0,.2,1); }
+  #cur img { position: absolute; left: 0; top: 0; display: block; transition: transform .1s; }
+  #cur .arrow { width: 28px; height: 40px; left: -5px; top: -5px; transform-origin: 5px 5px; }
+  #cur .hand { width: 32px; height: 32px; left: -13px; top: -8px; transform-origin: 13px 8px; display: none; }
+  #cur.on-btn .arrow { display: none; }
+  #cur.on-btn .hand { display: block; }
+  #cur.down img { transform: scale(.9); }
+  .rip { position: fixed; z-index: 8; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%;
+         border: 2px solid #0066ff; pointer-events: none; animation: rip .5s ease-out forwards; }
+  @keyframes rip { to { transform: scale(3.2); opacity: 0; } }
+  #hint { position: fixed; inset: 0; display: grid; place-items: center; z-index: 5;
+          color: #fff; font: 20px/1.4 system-ui, sans-serif; background: #0b1b3b; }
+</style>
+</head>
+<body>
+<div id="hint">Pulsa la barra espaciadora para empezar</div>
+<iframe id="f" title="Prototipo"></iframe>
+<div id="cur" aria-hidden="true"><img class="arrow" src="assets/cursor-arrow.png" alt=""><img class="hand" src="assets/cursor-hand.png" alt=""></div>
+<script>
+const PAUSA = 1500;
+const BASE = location.origin + '/';
+const F = document.getElementById('f');
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const D = () => F.contentDocument;
+const W = () => F.contentWindow;
+
+function go(u) {
+  return new Promise(r => { F.onload = () => r(); F.src = BASE + u; });
+}
+async function waitFor(fn, t = 10000) {
+  const s = Date.now();
+  while (Date.now() - s < t) {
+    try { const v = fn(); if (v) return v; } catch (e) {}
+    await sleep(80);
+  }
+  return null;
+}
+const vis = e => e && e.offsetParent !== null;
+const q = sel => D().querySelector(sel);
+const btn = (txt, exact) => [...D().querySelectorAll('button,[role=tab]')].find(x =>
+  vis(x) && (exact ? x.textContent.trim() === txt : x.textContent.includes(txt)));
+const CUR = document.getElementById('cur');
+async function clickEl(el) {
+  el.scrollIntoView({ block: 'nearest' });
+  const r = el.getBoundingClientRect();
+  const x = Math.round(r.left + r.width / 2), y = Math.round(r.top + r.height / 2);
+  CUR.classList.remove('on-btn');
+  CUR.style.transform = `translate(${x}px, ${y}px)`;
+  await sleep(560);
+  CUR.classList.add('on-btn');
+  await sleep(60);
+  CUR.classList.add('down');
+  const rip = document.createElement('div');
+  rip.className = 'rip'; rip.style.left = x + 'px'; rip.style.top = y + 'px';
+  document.body.appendChild(rip); setTimeout(() => rip.remove(), 600);
+  await sleep(140);
+  el.click();
+  CUR.classList.remove('down');
+}
+async function clickSel(sel) {
+  const el = await waitFor(() => { const e = q(sel); return vis(e) && e; });
+  if (!el) throw new Error('No encuentro: ' + sel);
+  await clickEl(el);
+}
+// For clicks that make the page navigate by itself: resolve when the iframe lands on `path`
+function landOn(path) {
+  return new Promise(r => { F.onload = () => { if (W().location.href.includes(path)) r(); }; });
+}
+async function click(txt, exact) {
+  const b = await waitFor(() => btn(txt, exact));
+  if (!b) throw new Error('No encuentro el botón: ' + txt);
+  await clickEl(b);
+}
+const pausa = () => sleep(PAUSA);
+// Covers: wait until the last line has animated in, then hold so it can be read
+const LEER_PORTADA = 7000, LEER_PERSONA = 6000;
+async function cover(u, ms) {
+  await go(u);
+  await waitFor(() => { const e = q('.roles li:nth-child(4)'); return e && getComputedStyle(e).opacity > 0.4; });
+  await sleep(ms);
+}
+
+async function run() {
+  // 1 · Portada
+  await cover('demo.html', LEER_PORTADA);
+  // 2 · María
+  await cover('demo.html?p=maria', LEER_PERSONA);
+  await go('index.html');
+  // 3
+  await click('Preparar briefing ejecutivo');
+  const enviar = await waitFor(() => { const s = q('button[aria-label="Enviar"]'); return s && !s.disabled && s; }, 15000);
+  await clickEl(enviar);
+  // 4
+  await waitFor(() => W().location.pathname.endsWith('briefing.html') && btn('Redactar con 6 fuentes'), 15000);
+  await click('Redactar con 6 fuentes');
+  await waitFor(() => q('.cite'), 15000);
+  await pausa();
+  // 5
+  await waitFor(() => btn('Tono'), 15000);
+  await sleep(300);
+  await click('Tono');
+  await sleep(300);
+  await click('Aplicar', true);
+  await waitFor(() => q('.toast.is-on'));
+  await pausa();
+  // 6 · Javier
+  await cover('demo.html?p=javier', LEER_PERSONA);
+  await go('javier.html');
+  await sleep(900);
+  // 7
+  await go('javier-plantilla.html');
+  await click('Sustituir por azul');
+  await waitFor(() => q('.sum--ok'));
+  await pausa();
+  await click('Publicar para toda la organizaci');
+  await sleep(600);
+  // 8
+  await go('javier-training.html');
+  await click('Entrenar agente');
+  await waitFor(() => /v15 activa/.test(D().body.innerText), 15000);
+  await pausa();
+  // 9 · Laura
+  await cover('demo.html?p=laura', LEER_PERSONA);
+  await go('laura.html');
+  await sleep(600);
+  for (const v of ['bars', 'tm', 'eco']) {
+    await clickSel(`#seg [data-v="${v}"]`);
+    await waitFor(() => q(`#seg [data-v="${v}"][aria-selected="true"]`));
+    await sleep(1300);
+  }
+  // 10
+  await go('laura-revision.html');
+  await click('Validar propuesta');
+  await sleep(600);
+  await click('Fusionar y marcar como oficial');
+  await sleep(900);
+  // 11
+  await go('laura.html?done=1');
+  await click('Reconectar', true);
+  await waitFor(() => q('.alert.is-ok'));
+  await pausa();
+  // 12 · Carlos
+  await cover('demo.html?p=carlos', LEER_PERSONA);
+  await go('carlos.html');
+  await waitFor(() => q('#bval') && q('#bval').textContent === '42' && q('#close-btn'), 15000);
+  await sleep(700); // let the 4 sequence lines finish rising in
+  await pausa();
+  // 13
+  await click('Cerrar como revisada');
+  await sleep(500);
+  await click('Confirmar cierre');
+  await waitFor(() => q('.brief.is-calm'), 15000);
+  await pausa();
+  // 14
+  await go('carlos-alerta.html');
+  const landed = landOn('carlos.html?done=2');
+  await click('Cerrar alerta', true);
+  await landed;
+  await waitFor(() => q('.brief.is-calm') && q('#bval').textContent === '0' && !q('.brief.is-counting'), 8000);
+  await sleep(900);
+  // 15
+  await go('carlos-audit.html?q=Resultados%20Q2');
+  await clickSel('#ch-2');
+  await sleep(1000);
+  await clickSel('#ch-5');
+  await waitFor(() => q('#mkt-row'));
+  await pausa();
+  // 16
+  await go('carlos-informe.html');
+  await click('Generar informe');
+  // 17
+  await click('Enviar al Comit');
+  await sleep(500);
+  const env = await waitFor(() => [...D().querySelectorAll('.sendbox button')].find(x => x.textContent.trim() === 'Enviar'));
+  await clickEl(env);
+  await waitFor(() => q('.sendbox.is-done'));
+  await pausa();
+  // 18
+  await go('demo.html?fin=1');
+  await waitFor(() => { const e = q('.roles li:nth-child(4)'); return e && getComputedStyle(e).opacity > 0.95; });
+  await pausa();
+}
+
+let started = false;
+addEventListener('keydown', async e => {
+  if (e.code !== 'Space' || started) return;
+  e.preventDefault();
+  started = true;
+  document.getElementById('hint').style.display = 'none';
+  try { await run(); }
+  catch (err) { document.title = 'Error: ' + err.message; console.error(err); }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SSoT · Demo</title>
+<link rel="stylesheet" href="assets/ssot.css">
+<style>
+body { background: var(--grey-9); color: var(--grey-0); }
+.card { min-height: 100vh; display: grid; align-content: center; padding: 0 10vw; position: relative; overflow: hidden; }
+.card::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 8px; background: var(--blue); }
+.brand { display: flex; align-items: center; gap: var(--s-4); animation: rise .5s var(--ease-out) both; }
+.brand img { height: 40px; width: auto; }
+.brand span { font-weight: 600; font-size: 20px; letter-spacing: .08em; color: var(--grey-0); padding-left: var(--s-4); border-left: 1px solid var(--grey-6); }
+h1 { margin: var(--s-10) 0 0; font-size: 88px; line-height: 1.02; font-weight: 500; letter-spacing: -.035em; max-width: 14ch; animation: rise .6s var(--ease-out) .15s both; }
+h1 em { font-style: normal; color: var(--blue); }
+.lead { margin: var(--s-6) 0 0; font-size: 22px; line-height: 1.5; color: var(--grey-2); max-width: 56ch; animation: rise .6s var(--ease-out) .3s both; }
+.roles { list-style: none; margin: var(--s-12) 0 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--s-6); max-width: 1100px; }
+.roles li { padding-top: var(--s-4); border-top: 2px solid var(--grey-7); animation: rise .5s var(--ease-out) both; animation-delay: calc(.45s + var(--i) * .12s); }
+.roles b { display: block; font-size: 22px; font-weight: 600; }
+.roles span { display: block; font-size: 15px; color: var(--grey-3); margin-top: 4px; }
+.roles strong { display: block; margin-top: var(--s-3); font-size: 15px; font-weight: 600; color: var(--grey-0); letter-spacing: .02em; }
+.roles li.on { border-top-color: var(--blue); }
+.roles.dim li:not(.on) b, .roles.dim li:not(.on) span, .roles.dim li:not(.on) strong { color: var(--grey-6); }
+
+/* Persona cover */
+.kick { margin: var(--s-10) 0 0; font-size: 14px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--grey-3); animation: rise .5s var(--ease-out) .1s both; }
+.who { margin: var(--s-3) 0 0; display: flex; align-items: baseline; flex-wrap: wrap; gap: var(--s-2) var(--s-6); animation: rise .6s var(--ease-out) .15s both; }
+.who h1 { margin: 0; animation: none; max-width: none; }
+.who p { margin: 0; font-size: 22px; color: var(--grey-3); }
+.who p b { color: var(--grey-0); font-weight: 600; }
+.q { margin: var(--s-8) 0 0; padding-left: var(--s-5); border-left: 4px solid var(--blue); font-size: 32px; line-height: 1.25; font-weight: 500; letter-spacing: -.01em; max-width: 34ch; animation: rise .6s var(--ease-out) .3s both; }
+.expect { margin: var(--s-6) 0 0; max-width: 60ch; animation: rise .6s var(--ease-out) .45s both; }
+.expect span { display: block; font-size: 14px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--grey-3); margin-bottom: var(--s-2); }
+.expect p { margin: 0; font-size: 22px; line-height: 1.5; color: var(--grey-1); }
+@media (max-width: 1000px) { h1 { font-size: 56px; } .q { font-size: 24px; } .roles { grid-template-columns: repeat(2, 1fr); } }
+</style>
+</head>
+<body>
+<main class="card" id="card"></main>
+<script>
+(function () {
+  const params = new URLSearchParams(location.search);
+  const fin = params.get('fin') === '1';
+  const p = params.get('p');
+  const ROLES = [
+    { k: 'maria', n: 'María', r: 'Crea conocimiento', v: 'Productividad' },
+    { k: 'javier', n: 'Javier', r: 'Gobierna la marca', v: 'Consistencia' },
+    { k: 'laura', n: 'Laura', r: 'Gobierna el conocimiento', v: 'Calidad' },
+    { k: 'carlos', n: 'Carlos', r: 'Gobierna la plataforma', v: 'Confianza' },
+  ];
+  // Names, roles and questions from personas/persona-1.md … persona-4.md
+  const PERSONAS = {
+    maria: { name: 'María Jiménez', role: 'Corporate Communications Manager', area: 'Comunicación Corporativa',
+      q: '¿Qué necesito crear hoy?',
+      expect: 'Convertir información dispersa en mensajes claros para Dirección y prensa en minutos, con cada dato respaldado por su fuente.' },
+    javier: { name: 'Javier Martín', role: 'Brand & Content Governance Lead', area: 'Marca Corporativa',
+      q: '¿Está la IA representando correctamente nuestra marca?',
+      expect: 'Que todo lo que genere la IA suene y se vea como Telefónica, y poder enseñarle las reglas de marca sin programar.' },
+    laura: { name: 'Laura Pérez', role: 'Knowledge & Metadata Manager', area: 'Gestión del Conocimiento',
+      q: '¿Está nuestro conocimiento preparado para responder correctamente?',
+      expect: 'Que la IA encuentre siempre la información correcta, actualizada y bien clasificada, sin tener que revisarlo todo a mano.' },
+    carlos: { name: 'Carlos Ruiz', role: 'Governance & Compliance Manager', area: 'Seguridad, Riesgo y Compliance',
+      q: '¿Está la plataforma funcionando de forma segura y conforme a las políticas?',
+      expect: 'Saber quién accede a qué información y con qué permisos, y detectar cualquier riesgo antes de que sea un problema.' },
+  };
+  const list = (on, dim) => `<ul class="roles${dim ? ' dim' : ''}">${ROLES.map((r, i) => `<li class="${on === 'all' || on === r.k ? 'on' : ''}" style="--i:${i}"><b>${r.n}</b><span>${r.r}</span><strong>${r.v}</strong></li>`).join('')}</ul>`;
+  const brand = '<div class="brand"><img src="assets/logo-white-horizontal.png" alt="Telefónica"><span>SSoT</span></div>';
+  let html;
+  if (p && PERSONAS[p]) {
+    const P = PERSONAS[p], i = ROLES.findIndex(r => r.k === p);
+    document.title = 'SSoT · ' + P.name;
+    html = `${brand}
+      <p class="kick">Perfil ${i + 1} de 4 · ${P.area}</p>
+      <div class="who"><h1>${P.name}</h1><p><b>${P.role}</b></p></div>
+      <p class="q">«${P.q}»</p>
+      <div class="expect"><span>Qué espera del SSoT</span><p>${P.expect}</p></div>
+      ${list(p, true)}`;
+  } else if (fin) {
+    html = `${brand}
+      <h1>Cada perfil aporta su parte al <em>mismo conocimiento</em>.</h1>
+      <p class="lead">Información útil, coherente y segura para toda la organización, desde una única fuente de verdad.</p>
+      ${list('all')}`;
+  } else {
+    html = `${brand}
+      <h1>Una única <em>fuente de verdad</em> para Telefónica.</h1>
+      <p class="lead">El SSoT reúne todo el conocimiento de la compañía en un único sitio de confianza. Cada respuesta de la IA cita sus fuentes, y cada perfil tiene una Home pensada para la pregunta que se hace cada día.</p>
+      ${list()}`;
+  }
+  document.getElementById('card').innerHTML = html;
+})();
+</script>
+</body>
+</html>
