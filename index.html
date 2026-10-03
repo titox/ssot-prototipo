@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SSoT · Inicio — María Jiménez</title>
+<link rel="stylesheet" href="assets/ssot.css">
+</head>
+<body>
+<div class="app">
+
+  <!-- Navegación -->
+  <nav class="nav" aria-label="Principal">
+    <div class="nav__brand">
+      <img src="assets/logo-blue-horizontal.png" alt="Telefónica">
+      <span class="nav__product">SSoT</span>
+    </div>
+    <ul class="nav__list">
+      <li><a class="nav__link" href="#" aria-current="page"><i data-lucide="house"></i>Inicio</a></li>
+      <li><a class="nav__link" href="#"><i data-lucide="sparkles"></i>Crear con IA</a></li>
+      <li><a class="nav__link" href="#"><i data-lucide="file-text"></i>Mis documentos</a></li>
+      <li><a class="nav__link" href="#"><i data-lucide="message-square"></i>Conversaciones</a></li>
+      <li><a class="nav__link" href="#"><i data-lucide="calendar-days"></i>Campañas</a></li>
+      <li><a class="nav__link" href="#"><i data-lucide="newspaper"></i>Cobertura<span class="nav__badge num" aria-label="12 novedades">12</span></a></li>
+      <li><a class="nav__link" href="#"><i data-lucide="chart-line"></i>KPIs</a></li>
+    </ul>
+    <div class="nav__foot">
+      <a class="nav__link" href="#"><i data-lucide="circle-help"></i>Ayuda</a>
+      <div class="nav__me">
+        <span class="avatar" aria-hidden="true">MJ</span>
+        <div><strong>María Jiménez</strong><small>Comunicación Corporativa</small></div>
+      </div>
+      <div class="role"><i data-lucide="repeat"></i>Ver como: <a href="javier.html">Javier</a> · <a href="laura.html">Laura</a> · <a href="carlos.html">Carlos</a></div>
+    </div>
+  </nav>
+
+  <main class="main">
+    <div class="greet">
+      <p><strong>Buenos días, María.</strong> Esto es lo que ha pasado desde ayer.</p>
+      <span class="greet__time num"><i data-lucide="clock-3" style="width:16px;height:16px"></i>Martes, 6 de octubre · 08:45</span>
+    </div>
+
+    <!-- Hero: prompt -->
+    <section class="hero" aria-labelledby="hero-title">
+      <h1 id="hero-title">¿Qué necesitas <span>crear</span> hoy?</h1>
+      <form class="prompt" id="prompt" novalidate>
+        <label for="prompt-input" class="visually-hidden">Describe lo que necesitas crear</label>
+        <textarea id="prompt-input" rows="1" placeholder="Describe lo que necesitas: una nota de prensa, un Q&A, un resumen para Dirección…"></textarea>
+        <button class="btn btn--primary btn--send" id="send" type="submit" aria-label="Enviar"><i data-lucide="arrow-up"></i></button>
+      </form>
+      <div class="prompt__ctx" id="ctx" aria-live="polite"></div>
+      <p class="prompt__hint" id="hint"><i data-lucide="shield-check"></i>Solo uso documentos vigentes y te muestro las fuentes de cada dato.</p>
+
+      <div class="quick" role="group" aria-label="Acciones rápidas">
+        <span class="quick__label">Acciones rápidas</span>
+        <button class="chip" type="button" data-fill="Redacta una nota de prensa sobre "><i data-lucide="pen-line"></i>Crear nota de prensa</button>
+        <button class="chip" type="button" data-fill="Prepara un Q&A con las preguntas previsibles de prensa sobre "><i data-lucide="list-checks"></i>Preparar Q&A</button>
+        <button class="chip" type="button" data-fill="Hazme el resumen semanal de cobertura y conversación sobre Telefónica para Dirección."><i data-lucide="calendar-range"></i>Resumen semanal</button>
+        <button class="chip" type="button" data-fill="Analiza la cobertura en medios de los últimos 7 días sobre "><i data-lucide="chart-no-axes-combined"></i>Analizar cobertura</button>
+        <button class="chip" type="button" data-fill="Busca la última versión de "><i data-lucide="search"></i>Buscar documentación</button>
+      </div>
+
+      <div class="gen" id="gen" aria-live="polite">
+        <p class="gen__title"><i data-lucide="loader-circle" class="spin" style="color:var(--blue)"></i><span id="gen-title">Preparando tu briefing ejecutivo…</span></p>
+        <ol class="gen__steps" id="gen-steps">
+          <li><span class="dot"><i data-lucide="circle"></i></span>Buscando en informes, prensa y social listening</li>
+          <li><span class="dot"><i data-lucide="circle"></i></span>Comparando con nuestros resultados T2 y ejes estratégicos</li>
+          <li><span class="dot"><i data-lucide="circle"></i></span>Redactando borrador con tono de marca</li>
+          <li><span class="dot"><i data-lucide="circle"></i></span>Añadiendo fuentes verificadas</li>
+        </ol>
+        <div class="gen__next" id="gen-next" hidden>
+          <p><i data-lucide="info" style="width:16px;height:16px"></i>En este prototipo, la revisión completa está diseñada para el briefing ejecutivo.</p>
+          <a class="btn btn--primary" href="briefing.html"><i data-lucide="arrow-right"></i>Ver el flujo de revisión</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sugerencia del agente -->
+    <section class="agent" aria-labelledby="agent-title">
+      <div class="agent__fig">
+        <span class="agent__num num">+18%</span>
+        <span class="agent__num-label"><i data-lucide="trending-up"></i>menciones «redes de fibra»</span>
+      </div>
+      <div>
+        <span class="agent__tag" id="agent-title"><i data-lucide="sparkles"></i>Sugerencia del agente · 07:52</span>
+        <p class="agent__text">Esta mañana se han publicado los <strong>resultados trimestrales de un competidor</strong> y se ha detectado un incremento del 18% en menciones relacionadas con redes de fibra en medios europeos.</p>
+        <p class="agent__src">Basado en 214 artículos y 3 informes · últimas 12 h</p>
+      </div>
+      <div class="agent__actions">
+        <button class="btn btn--primary" id="brief" type="button"><i data-lucide="file-pen-line"></i>Preparar briefing ejecutivo</button>
+        <button class="btn btn--ghost" type="button" data-toast="Abriendo las 214 menciones (próximamente)"><i data-lucide="newspaper"></i>Ver menciones</button>
+      </div>
+    </section>
+
+
+    <!-- Más sugerencias del agente -->
+    <div class="sugs" role="list" aria-label="Más sugerencias del agente">
+      <article class="sug" role="listitem">
+        <span class="sug__tag"><i data-lucide="sparkles"></i>Sugerencia · Informes</span>
+        <p>Se ha publicado el <strong>informe trimestral de Competidor X</strong>. ¿Quieres generar un resumen comparativo?</p>
+        <button class="btn btn--soft" type="button" data-suggest="Genera un resumen comparativo entre el informe trimestral de Competidor X y nuestros resultados del último trimestre, con las diferencias clave para Comunicación." data-ctx="file-bar-chart|Resultados T3 · Competidor X;;file-text|Resultados T2 · Telefónica"><i data-lucide="git-compare"></i>Generar resumen comparativo</button>
+      </article>
+      <article class="sug" role="listitem">
+        <span class="sug__tag"><i data-lucide="sparkles"></i>Sugerencia · Pendientes</span>
+        <p>Al <strong>Q&A de la Junta</strong> le faltan 4 respuestas y la Junta es el jueves. ¿Las redacto con el argumentario vigente?</p>
+        <button class="btn btn--soft" type="button" data-suggest="Completa las 4 respuestas pendientes del Q&A de la Junta General de Accionistas usando el argumentario vigente y la Guía de tono v3.2." data-ctx="list-checks|Q&A Junta General · v2;;presentation|Argumentario 5G · v7"><i data-lucide="list-checks"></i>Completar Q&A</button>
+      </article>
+      <article class="sug" role="listitem">
+        <span class="sug__tag"><i data-lucide="sparkles"></i>Sugerencia · Tono de marca</span>
+        <p>La <strong>Guía de tono v3.2</strong> afecta a 2 de tus documentos. ¿Reviso el tono y te marco los cambios?</p>
+        <button class="btn btn--soft" type="button" data-suggest="Revisa el tono del Q&amp;A de la Junta y del Argumentario 5G con la Guía de tono v3.2 y márcame los cambios propuestos." data-ctx="book-open-check|Guía de tono · v3.2;;list-checks|Q&A Junta General · v2;;presentation|Argumentario 5G · v7"><i data-lucide="spell-check"></i>Revisar tono</button>
+      </article>
+    </div>
+
+    <!-- Durante la noche + Hoy -->
+    <div class="row row--wire">
+      <section class="panel" aria-labelledby="wire-title">
+        <div class="panel__head">
+          <h2 id="wire-title"><i data-lucide="radio-tower"></i>Durante la noche</h2>
+          <span class="panel__meta">Desde las 19:00 de ayer · 5 novedades</span>
+        </div>
+        <ol class="wire">
+          <li class="wire__item wire__item--hot" tabindex="0">
+            <span class="wire__time num">07:40</span><span class="wire__dot"></span>
+            <div class="wire__body">
+              <span class="wire__kind"><i data-lucide="file-bar-chart"></i>Nuevo informe</span>
+              <p class="wire__title">Resultados T3 de Competidor X incorporados al repositorio</p>
+              <p class="wire__src">Fuente: web corporativa · validado por Gestión del Conocimiento</p>
+            </div>
+          </li>
+          <li class="wire__item wire__item--hot" tabindex="0">
+            <span class="wire__time num">06:15</span><span class="wire__dot"></span>
+            <div class="wire__body">
+              <span class="wire__kind"><i data-lucide="trending-up"></i>Pico de conversación</span>
+              <p class="wire__title">Menciones sobre redes de fibra en medios europeos: +18 % frente a la media</p>
+              <p class="wire__src">Fuente: social listening · Alemania, Reino Unido, España</p>
+            </div>
+          </li>
+          <li class="wire__item" tabindex="0">
+            <span class="wire__time num">05:30</span><span class="wire__dot"></span>
+            <div class="wire__body">
+              <span class="wire__kind"><i data-lucide="newspaper"></i>Prensa</span>
+              <p class="wire__title">La prensa económica destaca el avance del despliegue 5G en España</p>
+              <p class="wire__src">Fuente: 6 medios nacionales · tono positivo</p>
+            </div>
+          </li>
+          <li class="wire__item" tabindex="0">
+            <span class="wire__time num">23:10<small>ayer</small></span><span class="wire__dot"></span>
+            <div class="wire__body">
+              <span class="wire__kind"><i data-lucide="refresh-cw"></i>Actualización</span>
+              <p class="wire__title">Javier Martín publicó la versión 3.2 de la «Guía de tono de voz»</p>
+              <p class="wire__src">Brand & Content Governance · sustituye a la v3.1</p>
+            </div>
+          </li>
+          <li class="wire__item" tabindex="0">
+            <span class="wire__time num">19:05<small>ayer</small></span><span class="wire__dot"></span>
+            <div class="wire__body">
+              <span class="wire__kind"><i data-lucide="file-clock"></i>Pendiente tuyo</span>
+              <p class="wire__title">«Q&A Junta General de Accionistas» quedó en borrador</p>
+              <p class="wire__src">Te faltan 4 respuestas · fecha límite: jueves</p>
+            </div>
+          </li>
+        </ol>
+      </section>
+
+      <section class="panel" aria-labelledby="cal-title">
+        <div class="panel__head">
+          <h2 id="cal-title"><i data-lucide="calendar-days"></i>Próximas campañas</h2>
+          <a class="link" href="#">Calendario<i data-lucide="arrow-right"></i></a>
+        </div>
+        <ul class="cal">
+          <li class="cal__item" tabindex="0">
+            <div class="cal__date cal__date--today"><b class="num">6</b><span>Hoy</span></div>
+            <div><p class="cal__title">Lanzamiento campaña Fibra 10 Gb</p>
+              <p class="cal__meta"><span class="num">10:00</span>·<span class="status status--warn"><i data-lucide="clock-alert"></i>Nota sin aprobar</span></p></div>
+          </li>
+          <li class="cal__item" tabindex="0">
+            <div class="cal__date"><b class="num">8</b><span>Jue</span></div>
+            <div><p class="cal__title">Junta General de Accionistas</p>
+              <p class="cal__meta">Prensa + interna ·<span class="status status--info"><i data-lucide="pencil"></i>Q&A en borrador</span></p></div>
+          </li>
+          <li class="cal__item" tabindex="0">
+            <div class="cal__date"><b class="num">13</b><span>Mar</span></div>
+            <div><p class="cal__title">Informe de Sostenibilidad 2026</p>
+              <p class="cal__meta">Dirección ·<span class="status status--ok"><i data-lucide="check"></i>Materiales listos</span></p></div>
+          </li>
+          <li class="cal__item" tabindex="0">
+            <div class="cal__date"><b class="num">20</b><span>Mar</span></div>
+            <div><p class="cal__title">Campaña interna «Conectados»</p>
+              <p class="cal__meta">Comunicación interna ·<span class="status status--info"><i data-lucide="circle-dashed"></i>En planificación</span></p></div>
+          </li>
+        </ul>
+      </section>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpis-head">
+      <h2>Tus KPIs de comunicación</h2>
+      <span class="panel__meta">Últimos 7 días · frente a la semana anterior</span>
+    </div>
+    <div class="kpis">
+      <button class="kpi" type="button">
+        <span class="kpi__label">Menciones en medios</span>
+        <span class="kpi__value num">12.480</span>
+        <span class="kpi__delta up"><i data-lucide="arrow-up-right"></i>Sube 9 %<span>vs. 11.450</span></span>
+      </button>
+      <button class="kpi" type="button">
+        <span class="kpi__label">Sentimiento positivo</span>
+        <span class="kpi__value num">64<small>%</small></span>
+        <span class="kpi__delta up"><i data-lucide="arrow-up-right"></i>Sube 3 pts<span>vs. 61 %</span></span>
+      </button>
+      <button class="kpi" type="button">
+        <span class="kpi__label">Share of voice</span>
+        <span class="kpi__value num">31<small>%</small></span>
+        <span class="kpi__delta down"><i data-lucide="arrow-down-right"></i>Baja 2 pts<span>vs. 33 %</span></span>
+      </button>
+      <button class="kpi" type="button">
+        <span class="kpi__label">Alcance en redes</span>
+        <span class="kpi__value num">4,2<small> M</small></span>
+        <span class="kpi__delta up"><i data-lucide="arrow-up-right"></i>Sube 12 %<span>vs. 3,75 M</span></span>
+      </button>
+    </div>
+
+    <!-- Documentos, conversaciones, actividad -->
+    <div class="row row--three">
+      <section class="panel" aria-labelledby="docs-title">
+        <div class="panel__head"><h2 id="docs-title"><i data-lucide="file-text"></i>Mis documentos</h2><a class="link" href="#">Ver todos</a></div>
+        <ul class="list">
+          <li class="list__item" tabindex="0"><span class="list__icon"><i data-lucide="file-pen-line"></i></span>
+            <div class="list__main"><p class="list__title" title="Nota de prensa · Fibra 10 Gb">Nota de prensa · Fibra 10 Gb</p><p class="list__sub" title="Editado ayer, 18:40 · versión vigente">Editado ayer, 18:40 · versión vigente</p><span class="tone tone--ok"><i data-lucide="badge-check"></i>Tono de marca verificado</span></div><span class="status status--ok"><i data-lucide="check"></i>v4</span></li>
+          <li class="list__item" tabindex="0"><span class="list__icon"><i data-lucide="list-checks"></i></span>
+            <div class="list__main"><p class="list__title" title="Q&A Junta General de Accionistas">Q&A Junta General de Accionistas</p><p class="list__sub" title="Editado ayer, 19:05 · borrador">Editado ayer, 19:05 · borrador</p><span class="tone tone--warn"><i data-lucide="triangle-alert"></i>Revisar tono: Guía v3.2</span></div><span class="status status--info"><i data-lucide="pencil"></i>v2</span></li>
+          <li class="list__item" tabindex="0"><span class="list__icon"><i data-lucide="presentation"></i></span>
+            <div class="list__main"><p class="list__title" title="Argumentario 5G para portavoces">Argumentario 5G para portavoces</p><p class="list__sub" title="Editado el lunes · versión vigente">Editado el lunes · versión vigente</p><span class="tone tone--warn"><i data-lucide="triangle-alert"></i>Revisar tono: Guía v3.2</span></div><span class="status status--ok"><i data-lucide="check"></i>v7</span></li>
+          <li class="list__item" tabindex="0"><span class="list__icon"><i data-lucide="file-text"></i></span>
+            <div class="list__main"><p class="list__title" title="Resumen semanal de cobertura · S40">Resumen semanal de cobertura · S40</p><p class="list__sub" title="Editado el viernes · enviado a Dirección">Editado el viernes · enviado a Dirección</p><span class="tone tone--ok"><i data-lucide="badge-check"></i>Tono de marca verificado</span></div><span class="list__end">Final</span></li>
+        </ul>
+      </section>
+
+      <section class="panel" aria-labelledby="conv-title">
+        <div class="panel__head"><h2 id="conv-title"><i data-lucide="message-square"></i>Conversaciones</h2><a class="link" href="#">Ver todas</a></div>
+        <ul class="list">
+          <li class="list__item" tabindex="0"><span class="list__icon"><i data-lucide="sparkles"></i></span>
+            <div class="list__main"><p class="list__title" title="Mensajes clave para la Junta">Mensajes clave para la Junta</p><p class="list__sub" title="«Ajusta el tono para inversores minoristas…»">«Ajusta el tono para inversores minoristas…»</p></div><span class="list__end">Ayer</span></li>
+          <li class="list__item" tabindex="0"><span class="list__icon"><i data-lucide="sparkles"></i></span>
+            <div class="list__main"><p class="list__title" title="Cobertura del despliegue 5G">Cobertura del despliegue 5G</p><p class="list__sub" title="«Compara con la semana anterior por país…»">«Compara con la semana anterior por país…»</p></div><span class="list__end">Lun</span></li>
+          <li class="list__item" tabindex="0"><span class="list__icon"><i data-lucide="sparkles"></i></span>
+            <div class="list__main"><p class="list__title" title="Titulares para Fibra 10 Gb">Titulares para Fibra 10 Gb</p><p class="list__sub" title="«Dame cinco opciones más cortas…»">«Dame cinco opciones más cortas…»</p></div><span class="list__end">Vie</span></li>
+        </ul>
+      </section>
+
+      <section class="panel" aria-labelledby="act-title">
+        <div class="panel__head"><h2 id="act-title"><i data-lucide="activity"></i>Actividad reciente</h2></div>
+        <ul class="list">
+          <li class="list__item" tabindex="0"><span class="avatar av-2" aria-hidden="true">JM</span>
+            <div class="list__main"><p class="list__title" title="Javier actualizó la Guía de tono">Javier actualizó la Guía de tono</p><p class="list__sub" title="Versión 3.2 · afecta a tus borradores">Versión 3.2 · afecta a tus borradores</p></div><span class="list__end num">23:10</span></li>
+          <li class="list__item" tabindex="0"><span class="avatar av-3" aria-hidden="true">LP</span>
+            <div class="list__main"><p class="list__title" title="Laura añadió 3 fuentes nuevas">Laura añadió 3 fuentes nuevas</p><p class="list__sub" title="Informes de analistas · sector telco">Informes de analistas · sector telco</p></div><span class="list__end num">Ayer</span></li>
+          <li class="list__item" tabindex="0"><span class="avatar av-4" aria-hidden="true">AR</span>
+            <div class="list__main"><p class="list__title" title="Ana compartió «Plan interno T4»">Ana compartió «Plan interno T4»</p><p class="list__sub" title="Comunicación interna · puedes editar">Comunicación interna · puedes editar</p></div><span class="list__end num">Ayer</span></li>
+        </ul>
+      </section>
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status"><i data-lucide="info" style="width:16px;height:16px"></i><span id="toast-text"></span></div>
+
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script>
+  const draw = () => window.lucide && lucide.createIcons();
+  draw();
+
+  const form = document.getElementById('prompt');
+  const input = document.getElementById('prompt-input');
+  const send = document.getElementById('send');
+  const hint = document.getElementById('hint');
+  const ctx = document.getElementById('ctx');
+  const gen = document.getElementById('gen');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const hintDefault = hint.innerHTML;
+  let typing = null;
+
+  const grow = () => { input.style.height = 'auto'; input.style.height = input.scrollHeight + 'px'; };
+  const clearError = () => { form.classList.remove('is-error'); hint.classList.remove('is-error'); hint.innerHTML = hintDefault; draw(); };
+
+  input.addEventListener('input', () => { grow(); clearError(); form.classList.toggle('is-filled', input.value.trim() !== ''); });
+  input.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); form.requestSubmit(); } });
+
+  let typingFinish = null;
+  function typeInto(text, done) {
+    clearInterval(typing); clearError();
+    typingFinish = () => { clearInterval(typing); typing = null; typingFinish = null; input.value = text; grow(); done && done(); };
+    gen.classList.remove('is-on');
+    input.value = ''; form.classList.add('is-filled');
+    if (reduce) { typingFinish(); return; }
+    let i = 0;
+    typing = setInterval(() => {
+      i += 2; input.value = text.slice(0, i); grow();
+      if (i >= text.length) typingFinish();
+    }, 14);
+  }
+
+  function setContext(items) {
+    ctx.innerHTML = items.map(([icon, label]) => `<span class="ctx-chip"><i data-lucide="${icon}"></i>${label}</span>`).join('');
+    draw();
+  }
+
+  // Acciones rápidas
+  document.querySelectorAll('[data-fill]').forEach(btn => btn.addEventListener('click', () => {
+    setContext([]);
+    typeInto(btn.dataset.fill, () => { input.focus(); input.setSelectionRange(input.value.length, input.value.length); });
+  }));
+
+  // Sugerencia del agente → prompt pre-rellenado
+  document.getElementById('brief').addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+    setContext([['file-bar-chart', 'Resultados T3 · Competidor X'], ['trending-up', 'Menciones «redes de fibra» · 12 h'], ['shield-check', 'Ejes estratégicos 2026']]);
+    typeInto('Prepara un briefing ejecutivo para Dirección sobre los resultados trimestrales de Competidor X y el aumento del 18 % en menciones sobre redes de fibra en medios europeos. Incluye riesgos, mensajes clave y fuentes.', () => {
+      send.classList.remove('is-ready'); void send.offsetWidth; send.classList.add('is-ready');
+      send.focus({ preventScroll: true });
+    });
+  });
+
+
+  // Sugerencias secundarias → prompt pre-rellenado
+  document.querySelectorAll('[data-suggest]').forEach(btn => btn.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+    setContext(btn.dataset.ctx.split(';;').map(x => x.split('|')));
+    typeInto(btn.dataset.suggest, () => { send.classList.remove('is-ready'); void send.offsetWidth; send.classList.add('is-ready'); send.focus({ preventScroll: true }); });
+  }));
+
+  // Enviar
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    if (typingFinish) typingFinish();
+    if (!input.value.trim()) {
+      form.classList.add('is-error'); hint.classList.add('is-error');
+      hint.innerHTML = '<i data-lucide="circle-alert"></i>Escribe qué necesitas o elige una acción rápida.';
+      draw(); input.focus(); return;
+    }
+    const v = input.value.toLowerCase();
+    if (v.includes('briefing ejecutivo')) {
+      document.getElementById('gen-title').textContent = 'Buscando fuentes para tu briefing…';
+      gen.querySelector('.gen__steps').hidden = true; document.getElementById('gen-next').hidden = true;
+      gen.classList.add('is-on'); draw();
+      setTimeout(() => { location.href = 'briefing.html'; }, reduce ? 0 : 700);
+      return;
+    }
+    document.getElementById('gen-title').textContent = v.includes('briefing') ? 'Preparando tu briefing ejecutivo…' : v.includes('revisa el tono') ? 'Revisando el tono de tus documentos…' : 'Preparando tu documento…';
+    const steps = [...document.querySelectorAll('#gen-steps li')];
+    steps.forEach(li => { li.className = ''; li.querySelector('.dot').innerHTML = '<i data-lucide="circle"></i>'; });
+    gen.querySelector('.gen__title svg').outerHTML = '<i data-lucide="loader-circle" class="spin" style="color:var(--blue)"></i>';
+    document.getElementById('gen-next').hidden = true;
+    gen.classList.add('is-on'); draw();
+    steps.forEach((li, n) => {
+      setTimeout(() => {
+        if (n > 0) { steps[n-1].className = 'is-done'; steps[n-1].querySelector('.dot').innerHTML = '<i data-lucide="circle-check"></i>'; }
+        li.className = 'is-active'; li.querySelector('.dot').innerHTML = '<i data-lucide="loader-circle" class="spin"></i>'; draw();
+      }, n * 900);
+    });
+    setTimeout(() => {
+      const last = steps[steps.length - 1];
+      last.className = 'is-done'; last.querySelector('.dot').innerHTML = '<i data-lucide="circle-check"></i>';
+      document.getElementById('gen-title').textContent = v.includes('revisa el tono') ? 'Cambios de tono listos para revisar' : 'Borrador listo para revisar';
+      gen.querySelector('.gen__title svg').outerHTML = '<i data-lucide="circle-check" style="color:var(--turquoise-very-dark)"></i>';
+      document.getElementById('gen-next').hidden = false;
+      draw();
+    }, steps.length * 900);
+  });
+
+  // Placeholders de navegación
+  const toast = document.getElementById('toast'), toastText = document.getElementById('toast-text');
+  let toastT;
+  const showToast = msg => { toastText.textContent = msg; toast.classList.add('is-on'); clearTimeout(toastT); toastT = setTimeout(() => toast.classList.remove('is-on'), 2200); };
+  document.querySelectorAll('[data-toast]').forEach(b => b.addEventListener('click', () => showToast(b.dataset.toast)));
+  document.querySelectorAll('.nav__link:not([aria-current]):not([href$=".html"]), .link, .wire__item, .cal__item, .kpi, .list__item').forEach(el => {
+    el.addEventListener('click', e => { e.preventDefault(); showToast('Esta pantalla llegará en la siguiente fase del prototipo'); });
+    el.addEventListener('keydown', e => { if (e.key === 'Enter' && el.tagName === 'LI') el.click(); });
+  });
+</script>
+</body>
+</html>

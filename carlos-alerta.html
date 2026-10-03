@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SSoT · Alerta de acceso restringido — Carlos Ruiz</title>
+<link rel="stylesheet" href="assets/ssot.css">
+<style>
+.ws { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: var(--s-6); align-items: start; }
+.stack { display: grid; gap: var(--s-5); }
+.sticky { position: sticky; top: var(--s-6); display: grid; gap: var(--s-5); }
+.ph__kicker { display: inline-flex; align-items: center; gap: 6px; }
+.ph__kicker .status { text-transform: none; letter-spacing: 0; }
+
+/* Summary strip */
+.sum { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--s-4); }
+.sum div { background: var(--grey-0); border: 1px solid var(--grey-2); border-radius: var(--r-card); padding: var(--s-4) var(--s-5); box-shadow: var(--shadow-1); }
+.sum span { font-size: 14px; color: var(--grey-7); font-weight: 500; display: flex; gap: 6px; align-items: center; }
+.sum span svg { width: 16px; height: 16px; color: var(--blue); }
+.sum b { display: block; font-size: 32px; font-weight: 600; letter-spacing: -.03em; line-height: 1.1; margin-top: var(--s-2); }
+.sum small { display: block; font-size: 12px; color: var(--grey-6); margin-top: 2px; }
+.sum .ok b { color: var(--turquoise-very-dark); }
+
+/* Hourly chart */
+.legend { display: flex; gap: var(--s-4); font-size: 13px; color: var(--grey-7); }
+.legend span { display: inline-flex; gap: 6px; align-items: center; }
+.legend i { width: 12px; height: 12px; border-radius: 2px; background: var(--blue); }
+.legend i.base { background: none; border-top: 2px dashed var(--grey-6); height: 0; border-radius: 0; }
+.legend i.hot { background: #A7863E; }
+.chart { display: grid; grid-template-columns: repeat(8, 1fr); gap: var(--s-3); align-items: end; height: 200px; padding: var(--s-4) 0 0; position: relative; border-bottom: 1px solid var(--grey-2); }
+.col { position: relative; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; cursor: default; }
+.col i { display: block; width: 100%; max-width: 56px; background: var(--blue); border-radius: 4px 4px 0 0; transform-origin: bottom; animation: growy .6s var(--ease-out) both; animation-delay: var(--d); }
+.col.hot i { background: #A7863E; }
+.col b { font-size: 13px; font-weight: 600; margin-bottom: 4px; animation: fadein .3s ease-out both; animation-delay: calc(var(--d) + 300ms); }
+.col.hot b { color: var(--yellow-very-dark); }
+.col .base { position: absolute; left: -6px; right: -6px; border-top: 2px dashed var(--grey-6); }
+.hours { display: grid; grid-template-columns: repeat(8, 1fr); gap: var(--s-3); font-size: 12px; color: var(--grey-6); text-align: center; padding-top: 6px; }
+.chart-note { margin: var(--s-3) 0 0; font-size: 13px; color: var(--grey-7); display: flex; gap: 6px; align-items: center; }
+.chart-note svg { width: 16px; height: 16px; color: var(--yellow-very-dark); }
+@keyframes growy { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+@keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+
+/* Steps */
+.steps { list-style: none; margin: 0; padding: 0; position: relative; }
+.steps::before { content: ""; position: absolute; left: 75px; top: 10px; bottom: 10px; width: 2px; background: var(--grey-2); }
+.steps li { display: grid; grid-template-columns: 60px 32px 1fr; align-items: start; padding: var(--s-3) 0; }
+.steps time { font-size: 14px; font-weight: 600; text-align: right; padding-top: 1px; }
+.steps .dot { justify-self: center; width: 12px; height: 12px; margin-top: 5px; border-radius: 50%; background: var(--grey-0); border: 2px solid var(--blue); position: relative; z-index: 1; }
+.steps p { margin: 0; font-size: 15px; line-height: 1.45; }
+.steps p strong { font-weight: 600; }
+.steps small { display: block; font-size: 13px; color: var(--grey-6); margin-top: 2px; }
+.steps .ai .dot { background: var(--blue); }
+
+/* Users table */
+.filters { display: flex; flex-wrap: wrap; gap: var(--s-2); margin-bottom: var(--s-3); }
+.fchip { height: 40px; padding: 0 var(--s-4); border-radius: var(--r-pill); border: 1px solid var(--grey-2); background: var(--grey-0); font-weight: 500; font-size: 14px; color: var(--grey-8); display: inline-flex; align-items: center; gap: 6px; }
+.fchip:hover { border-color: var(--blue); color: var(--blue); }
+.fchip[aria-pressed="true"] { background: var(--blue); border-color: var(--blue); color: var(--grey-0); }
+.fchip span { font-size: 12px; opacity: .8; }
+.tbl { width: 100%; border-collapse: collapse; font-size: 14px; }
+.tbl th { text-align: left; font-size: 12px; font-weight: 600; color: var(--grey-6); padding: 0 var(--s-3) var(--s-2); border-bottom: 1px solid var(--grey-2); }
+.tbl td { height: 52px; padding: 0 var(--s-3); border-bottom: 1px solid var(--grey-1); }
+.tbl tr:hover td { background: var(--grey-1); }
+.tbl .r { text-align: right; }
+.tbl td small { display: block; font-size: 12px; color: var(--grey-6); }
+.who { display: flex; align-items: center; gap: var(--s-3); }
+.who .avatar { width: 32px; height: 32px; font-size: 12px; }
+.tbl-foot { display: flex; justify-content: space-between; align-items: center; margin-top: var(--s-3); font-size: 13px; color: var(--grey-6); }
+
+/* AI usage */
+.gen-list { list-style: none; margin: 0; padding: 0; }
+.gen-list li { display: grid; grid-template-columns: 36px 1fr auto; gap: var(--s-3); align-items: center; min-height: 56px; border-top: 1px solid var(--grey-1); }
+.gen-list li:first-child { border-top: 0; }
+.gen-list .ico { width: 36px; height: 36px; border-radius: var(--r-ctrl); background: var(--blue-tint); color: var(--blue); display: grid; place-items: center; }
+.gen-list .ico svg { width: 18px; height: 18px; }
+.gen-list p { margin: 0; font-weight: 500; font-size: 14px; }
+.gen-list small { display: block; font-size: 12px; color: var(--grey-6); font-weight: 400; }
+
+/* Aside */
+.ai-box { background: var(--grey-9); color: var(--grey-0); border-radius: var(--r-card); padding: var(--s-5); position: relative; overflow: hidden; }
+.ai-box::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 4px; background: var(--blue); }
+.ai-box .tag { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--grey-3); display: flex; gap: 6px; align-items: center; margin-bottom: var(--s-2); }
+.ai-box .tag svg { width: 16px; height: 16px; color: var(--blue); }
+.ai-box p { margin: 0; font-size: 15px; line-height: 1.5; color: var(--grey-1); }
+.ai-box p strong { color: var(--grey-0); font-weight: 600; }
+.ai-box ul { margin: var(--s-3) 0 0; padding: 0; list-style: none; display: grid; gap: 6px; font-size: 13px; color: var(--grey-2); }
+.ai-box li { display: flex; gap: var(--s-2); align-items: center; }
+.ai-box li svg { width: 15px; height: 15px; color: var(--turquoise-very-light); }
+
+.close h2 { margin: 0 0 var(--s-1); font-size: 18px; font-weight: 600; }
+.close > p { margin: 0 0 var(--s-4); font-size: 13px; color: var(--grey-6); }
+.close fieldset { border: 0; margin: 0 0 var(--s-4); padding: 0; display: grid; gap: var(--s-2); }
+.close legend { font-size: 14px; font-weight: 600; margin-bottom: var(--s-2); }
+.ropt { display: grid; grid-template-columns: 20px 1fr; gap: var(--s-3); padding: var(--s-3) var(--s-4); border: 1.5px solid var(--grey-2); border-radius: var(--r-ctrl); cursor: pointer; transition: border-color .15s; }
+.ropt:hover { border-color: var(--grey-3); }
+.ropt input { width: 18px; height: 18px; margin: 2px 0 0; accent-color: var(--blue); }
+.ropt:has(input:checked) { border-color: var(--blue); background: var(--blue-tint); }
+.ropt strong { display: block; font-size: 14px; font-weight: 600; }
+.ropt small { display: block; font-size: 12px; color: var(--grey-6); }
+.ropt.esc:has(input:checked) { border-color: var(--coral-dark); background: var(--coral-very-light); }
+.close label.f { display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+.close label.f span { font-weight: 400; color: var(--grey-6); }
+.close textarea { width: 100%; min-height: 84px; border: 1.5px solid var(--grey-3); border-radius: var(--r-ctrl); padding: var(--s-3); font-size: 14px; resize: vertical; }
+.close textarea:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 4px var(--blue-tint); }
+.close .btn { width: 100%; margin-top: var(--s-4); }
+.close .note { display: flex; gap: 6px; align-items: flex-start; margin: var(--s-3) 0 0; font-size: 12px; color: var(--grey-6); }
+.close .note svg { width: 14px; height: 14px; flex-shrink: 0; margin-top: 1px; }
+.btn--danger { background: var(--coral-dark); color: var(--grey-0); }
+.btn--danger:hover { background: #6B302A; }
+.esc-confirm { margin-top: var(--s-3); padding: var(--s-4); border-radius: var(--r-ctrl); background: var(--coral-very-light); border: 1.5px solid var(--coral-dark); font-size: 13px; color: var(--grey-9); animation: rise .25s var(--ease-out) both; }
+.esc-confirm p { margin: 0 0 var(--s-3); }
+.esc-confirm .row2 { display: flex; gap: var(--s-2); }
+.esc-confirm .btn { margin-top: 0; width: auto; flex: 1; }
+
+@media (max-width: 1180px) { .ws { grid-template-columns: 1fr; } .sticky { position: static; } .sum { grid-template-columns: repeat(2, 1fr); } }
+.steps li.bad .dot { border-color: var(--coral-dark); background: var(--coral-very-light); }
+.steps li.bad time { color: var(--coral-dark); }
+.tbl tr.is-flag td { background: var(--coral-very-light); }
+.status--bad { background: var(--coral-very-light); color: var(--coral-dark); }
+.chk { display: grid; grid-template-columns: 20px 1fr; gap: var(--s-3); align-items: start; font-size: 14px; cursor: pointer; padding: var(--s-2) 0; }
+.chk input { width: 18px; height: 18px; margin: 1px 0 0; accent-color: var(--blue); }
+</style>
+</head>
+<body data-page="alertas" data-alerts="1">
+<div class="app">
+  <nav class="nav" id="nav" aria-label="Principal"></nav>
+
+  <main class="main">
+    <nav class="crumbs" aria-label="Ruta"><a href="carlos.html?done=1">Trust Center</a><i data-lucide="chevron-right"></i><span>Alertas</span><i data-lucide="chevron-right"></i><span aria-current="page">Intento de acceso restringido</span></nav>
+    <div class="ph">
+      <div>
+        <span class="ph__kicker">Alerta ALR-2026-0188 · <span class="status status--bad"><i data-lucide="shield-alert"></i>Prioridad alta</span> · detectada a las 07:52</span>
+        <h1>Intento de acceso a un documento restringido</h1>
+        <p>Una persona sin permiso ha intentado abrir 3 veces un documento de Gabinete. El sistema lo bloqueó; la IA ha reconstruido cómo llegó hasta él.</p>
+      </div>
+      <div class="ph__actions">
+        <a class="btn btn--ghost" href="#" data-soon="Exportar evidencia: llegará en la siguiente fase del prototipo"><i data-lucide="file-down"></i>Exportar evidencia</a>
+      </div>
+    </div>
+
+    <div class="ws">
+      <div class="stack">
+        <section class="sum" aria-label="Resumen">
+          <div><span><i data-lucide="repeat"></i>Intentos</span><b class="num">3</b><small>Entre las 07:44 y las 07:52</small></div>
+          <div><span><i data-lucide="lock"></i>Documento</span><b style="font-size:18px;letter-spacing:-.01em;line-height:1.3">Plan Estratégico 2027</b><small>Gabinete · Restringido</small></div>
+          <div class="ok"><span><i data-lucide="shield-check"></i>Bloqueados</span><b class="num">3/3</b><small>No se mostró ningún contenido</small></div>
+          <div><span><i data-lucide="user"></i>Usuario</span><b style="font-size:18px;letter-spacing:-.01em;line-height:1.3">Daniel Ortiz</b><small>Clientes · Atención a empresas</small></div>
+        </section>
+
+        <section class="panel" aria-labelledby="st-title">
+          <div class="panel__head"><h2 id="st-title"><i data-lucide="list-tree"></i>Secuencia reconstruida</h2><span class="panel__meta">Generada por la IA a partir del Audit Trail</span></div>
+          <ol class="steps">
+            <li><time>07:31</time><span class="dot"></span><div><p><strong>Daniel Ortiz</strong> recibe la presentación «Comité de Clientes · octubre» reenviada por Patricia Gómez.</p><small>La diapositiva 12 incluye un enlace a «Plan Estratégico 2027 · Gabinete»</small></div></li>
+            <li class="bad"><time>07:44</time><span class="dot"></span><div><p>Abre el enlace. <strong>Acceso bloqueado</strong>: no tiene permiso sobre documentos Restringido de Gabinete.</p><small>Portátil corporativo · red de oficina, Distrito Telefónica</small></div></li>
+            <li class="bad"><time>07:47</time><span class="dot"></span><div><p>Lo intenta de nuevo desde el móvil. <strong>Bloqueado.</strong></p><small>App SSoT · iOS · sesión corporativa</small></div></li>
+            <li class="ai"><time>07:50</time><span class="dot"></span><div><p>Pregunta al asistente por los <strong>«objetivos 2027 de clientes empresa»</strong>.</p><small>La IA respondió solo con documentos que Daniel puede ver: no usó el Plan Estratégico</small></div></li>
+            <li class="bad"><time>07:52</time><span class="dot"></span><div><p>Tercer intento. <strong>Bloqueado</strong> y se genera la alerta.</p><small>Umbral: 3 intentos en 10 minutos</small></div></li>
+          </ol>
+        </section>
+
+        <section class="panel" aria-labelledby="pm-title">
+          <div class="panel__head"><h2 id="pm-title"><i data-lucide="key-round"></i>Permisos de Daniel Ortiz en ese momento</h2><span class="panel__meta">Sin cambios en los últimos 90 días</span></div>
+          <table class="tbl">
+            <thead><tr><th>Ámbito</th><th>Nivel</th><th>Permiso</th><th>Desde</th></tr></thead>
+            <tbody>
+              <tr><td>Clientes · documentación general</td><td>Uso interno</td><td>Lectura</td><td>Mar 2024</td></tr>
+              <tr><td>Clientes · cuentas empresa</td><td>Confidencial</td><td>Lectura</td><td>Ene 2025</td></tr>
+              <tr class="is-flag"><td>Gabinete · Plan Estratégico 2027</td><td>Restringido</td><td><span class="status status--bad"><i data-lucide="ban"></i>Sin acceso</span></td><td>—</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="panel" aria-labelledby="ln-title">
+          <div class="panel__head"><h2 id="ln-title"><i data-lucide="link"></i>De dónde salió el enlace</h2></div>
+          <ul class="gen-list">
+            <li><span class="ico"><i data-lucide="presentation"></i></span><p>Comité de Clientes · octubre<small>Patricia Gómez · Clientes · reenviada a 14 personas · diapositiva 12</small></p><span class="status status--warn"><i data-lucide="circle-alert"></i>Enlace a Restringido</span></li>
+          </ul>
+          <p class="chart-note"><i data-lucide="info"></i>Ninguna de las otras 13 personas que recibieron la presentación ha intentado abrir el enlace.</p>
+        </section>
+      </div>
+
+      <aside class="sticky">
+        <section class="ai-box" aria-labelledby="ai-c">
+          <p class="tag" id="ai-c"><i data-lucide="sparkles"></i>Conclusión de la IA</p>
+          <p>Los controles han funcionado: <strong>el acceso se bloqueó las 3 veces</strong>. El enlace llegó en una presentación interna, así que no parece un intento malicioso.</p>
+          <ul>
+            <li><i data-lucide="check"></i>No se mostró ningún contenido restringido</li>
+            <li><i data-lucide="check"></i>La IA no usó el documento en sus respuestas</li>
+            <li><i data-lucide="check"></i>Usuario y dispositivos corporativos</li>
+          </ul>
+        </section>
+
+        <section class="panel close" aria-labelledby="cl-title">
+          <h2 id="cl-title">Cerrar la alerta</h2>
+          <p>Quedará registrado en el Audit Trail con tu nombre y el motivo.</p>
+          <fieldset>
+            <legend>Motivo</legend>
+            <label class="ropt"><input type="radio" name="why" value="ok" checked><span><strong>Bloqueo correcto, sin riesgo</strong><small>Los controles funcionaron</small></span></label>
+            <label class="ropt"><input type="radio" name="why" value="ask"><span><strong>Pedir justificación a Daniel Ortiz</strong><small>La alerta queda abierta hasta que responda</small></span></label>
+            <label class="ropt esc"><input type="radio" name="why" value="esc"><span><strong>Escalar a Seguridad</strong><small>Abre una investigación formal</small></span></label>
+          </fieldset>
+          <label class="chk"><input type="checkbox" id="notify" checked><span>Pedir a Patricia Gómez que retire el enlace de la presentación</span></label>
+          <button class="btn btn--primary" type="button" id="cl-btn"><i data-lucide="check"></i>Cerrar alerta</button>
+          <div id="esc-slot"></div>
+          <p class="note"><i data-lucide="info"></i>Puedes reabrir la alerta en cualquier momento desde el Trust Center.</p>
+        </section>
+      </aside>
+    </div>
+  </main>
+</div>
+
+<script src="assets/carlos.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  const btn = $('cl-btn');
+  const LABEL = {
+    ok: ['btn--primary', 'check', 'Cerrar alerta'],
+    ask: ['btn--primary', 'send', 'Enviar petición a Daniel'],
+    esc: ['btn--danger', 'shield-alert', 'Escalar a Seguridad'],
+  };
+  const val = () => document.querySelector('input[name="why"]:checked').value;
+  document.querySelectorAll('input[name="why"]').forEach(r => r.addEventListener('change', () => {
+    const [cls, ico, txt] = LABEL[val()];
+    $('esc-slot').innerHTML = ''; btn.hidden = false; btn.disabled = false;
+    btn.className = 'btn ' + cls; btn.innerHTML = `<i data-lucide="${ico}"></i>${txt}`; draw();
+  }));
+  btn.addEventListener('click', () => {
+    const why = val();
+    if (why === 'esc') {
+      btn.hidden = true;
+      $('esc-slot').innerHTML = `<div class="esc-confirm" role="alertdialog" aria-labelledby="esc-t"><p id="esc-t"><strong>¿Escalar a Seguridad?</strong> Se abrirá una investigación formal sobre Daniel Ortiz y se notificará a su responsable.</p><div class="row2"><button class="btn btn--danger" type="button" id="esc-ok">Sí, escalar</button><button class="btn btn--ghost" type="button" id="esc-no">Cancelar</button></div></div>`;
+      $('esc-ok').focus();
+      $('esc-no').addEventListener('click', () => { $('esc-slot').innerHTML = ''; btn.hidden = false; btn.focus(); });
+      $('esc-ok').addEventListener('click', () => showToast('Escalado registrado. El flujo de investigación llegará en la siguiente fase del prototipo'));
+      return;
+    }
+    if (why === 'ask') {
+      btn.disabled = true; btn.innerHTML = '<i data-lucide="check"></i>Petición enviada'; draw();
+      showToast('Daniel Ortiz recibirá la petición. La alerta sigue abierta hasta que responda');
+      return;
+    }
+    btn.disabled = true; btn.innerHTML = '<i data-lucide="loader-circle" class="spin"></i>Registrando en el Audit Trail…'; draw();
+    setTimeout(() => { location.href = 'carlos.html?done=2'; }, reduceMotion ? 200 : 1000);
+  });
+})();
+</script>
+</body>
+</html>

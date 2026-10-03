@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SSoT · Tono de voz — Javier Martín</title>
+<link rel="stylesheet" href="assets/ssot.css">
+<style>
+.grid { display: grid; grid-template-columns: 260px minmax(0, 1fr) 340px; gap: var(--s-6); align-items: start; }
+.lbl { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--grey-6); margin: 0 0 var(--s-2); }
+.side { position: sticky; top: var(--s-6); display: flex; flex-direction: column; gap: var(--s-4); }
+
+.banner { display: flex; gap: var(--s-4); align-items: center; padding: var(--s-4) var(--s-5); margin-bottom: var(--s-6); border-radius: var(--r-card); background: var(--yellow-very-light); color: var(--yellow-very-dark); }
+.banner svg { width: 20px; height: 20px; flex-shrink: 0; }
+.banner p { margin: 0; font-size: 15px; flex: 1; }
+.banner strong { font-weight: 600; }
+
+/* Doc types */
+.types { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.type { width: 100%; display: flex; align-items: center; gap: var(--s-3); min-height: 48px; padding: var(--s-2) var(--s-3); border: 0; border-radius: var(--r-ctrl); background: transparent; text-align: left; font-weight: 500; color: var(--grey-7); }
+.type:hover { background: var(--grey-0); }
+.type[aria-selected="true"] { background: var(--grey-0); color: var(--grey-9); font-weight: 600; box-shadow: inset 3px 0 0 var(--blue), var(--shadow-1); }
+.type svg { width: 18px; height: 18px; color: var(--blue); flex-shrink: 0; }
+.type small { display: block; font-size: 12px; font-weight: 400; color: var(--grey-6); }
+.type .status { margin-left: auto; }
+
+/* Register scale */
+.scale { display: flex; gap: 6px; }
+.scale label { flex: 1; cursor: pointer; }
+.scale input { position: absolute; opacity: 0; pointer-events: none; }
+.scale span { display: flex; flex-direction: column; gap: 2px; padding: var(--s-3); border: 1px solid var(--grey-2); border-radius: var(--r-ctrl); font-size: 14px; font-weight: 500; transition: all .15s; }
+.scale span small { font-size: 12px; color: var(--grey-6); font-weight: 400; }
+.scale input:checked + span { border-color: var(--blue); background: var(--blue-tint); color: var(--blue); font-weight: 600; }
+.scale input:focus-visible + span { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+/* Rules */
+.rules { list-style: none; margin: 0; padding: 0; counter-reset: r; }
+.rule { counter-increment: r; display: grid; grid-template-columns: 28px 1fr auto; gap: var(--s-3); align-items: start; padding: var(--s-4) 0; border-bottom: 1px solid var(--grey-1); }
+.rule:last-child { border-bottom: 0; }
+.rule::before { content: counter(r); width: 24px; height: 24px; border-radius: 6px; background: var(--grey-1); color: var(--grey-7); display: grid; place-items: center; font-size: 12px; font-weight: 600; }
+.rule p { margin: 0; font-size: 15px; line-height: 1.5; }
+.rule small { display: flex; align-items: center; gap: 4px; margin-top: 4px; font-size: 12px; color: var(--grey-6); }
+.rule small svg { width: 13px; height: 13px; }
+.rule--flag { background: var(--yellow-very-light); margin: 0 calc(var(--s-5) * -1); padding: var(--s-4) var(--s-5); border-radius: var(--r-ctrl); }
+.rule--flag::before { background: var(--yellow-very-dark); color: var(--grey-0); }
+.rule--flag small { color: var(--yellow-very-dark); font-weight: 600; }
+.rule--new { background: var(--turquoise-very-light); margin: 0 calc(var(--s-5) * -1); padding: var(--s-4) var(--s-5); border-radius: var(--r-ctrl); }
+.rule--new::before { background: var(--turquoise-very-dark); color: var(--grey-0); }
+.rule--new small { color: var(--turquoise-very-dark); font-weight: 600; }
+.rule .btn { height: 36px; font-size: 13px; padding: 0 var(--s-3); }
+
+.editor { margin-top: var(--s-3); display: grid; gap: var(--s-2); }
+.editor label { font-size: 13px; font-weight: 500; color: var(--grey-7); }
+.editor textarea { width: 100%; min-height: 84px; padding: var(--s-3); border: 1.5px solid var(--blue); border-radius: var(--r-ctrl); font-size: 15px; line-height: 1.5; resize: vertical; box-shadow: 0 0 0 4px var(--blue-tint); background: var(--grey-0); }
+.editor textarea:focus { outline: 0; }
+.aihint { display: flex; gap: 6px; align-items: center; font-size: 12px; color: var(--blue); font-weight: 600; }
+.aihint svg { width: 14px; height: 14px; }
+.editor__act { display: flex; gap: var(--s-2); }
+.editor__act .btn { height: 40px; font-size: 14px; }
+.err { color: var(--coral-dark); font-size: 13px; font-weight: 500; display: flex; gap: 6px; align-items: center; }
+.err svg { width: 14px; height: 14px; }
+
+/* Vocabulary */
+.vocab { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-5); }
+.vocab ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.vocab li { font-size: 14px; padding: 4px 10px; border-radius: var(--r-pill); border: 1px solid var(--grey-2); }
+.vocab .say li { background: var(--turquoise-very-light); border-color: transparent; color: var(--turquoise-very-dark); }
+.vocab .avoid li { background: var(--coral-very-light); border-color: transparent; color: var(--coral-dark); text-decoration: line-through; }
+.vocab li.is-new { animation: pop .3s var(--ease-out) both; box-shadow: 0 0 0 2px var(--coral-dark); }
+.vocab h3 { margin: 0 0 var(--s-2); font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+.vocab h3 svg { width: 15px; height: 15px; }
+
+/* Preview */
+.prev { display: grid; gap: var(--s-3); }
+.prev__row { padding: var(--s-4); border-radius: var(--r-ctrl); border: 1px solid var(--grey-2); }
+.prev__row p.lbl { margin-bottom: 4px; font-size: 12px; }
+.prev__row p { margin: 0; font-size: 15px; line-height: 1.55; }
+.prev__row mark { background: var(--coral-very-light); color: var(--coral-dark); padding: 0 2px; border-radius: 2px; }
+.prev__row--after { border-color: var(--turquoise-very-dark); background: var(--turquoise-very-light); }
+.prev__row--after p { color: var(--grey-9); }
+
+/* Pending */
+.pend__count { font-size: 48px; font-weight: 600; letter-spacing: -.03em; line-height: 1; }
+.pend ul { list-style: none; margin: var(--s-3) 0 var(--s-4); padding: 0; display: grid; gap: var(--s-2); font-size: 14px; }
+.pend li { display: flex; gap: var(--s-2); align-items: flex-start; }
+.pend li svg { width: 16px; height: 16px; color: var(--blue); flex-shrink: 0; margin-top: 2px; }
+.pend li.is-new { font-weight: 600; animation: rise .3s var(--ease-out) both; }
+.pend .btn { width: 100%; }
+.btn:disabled { background: var(--grey-2); color: var(--grey-6); cursor: not-allowed; transform: none; }
+
+@media (max-width: 1280px) { .grid { grid-template-columns: 1fr; } .side { position: static; } }
+</style>
+</head>
+<body data-page="tono">
+<div class="app">
+  <nav class="nav" id="nav" aria-label="Principal"></nav>
+
+  <main class="main" style="max-width:1440px">
+    <nav class="crumbs" aria-label="Ruta"><a href="javier.html">Inicio</a><i data-lucide="chevron-right"></i><span>Tono de voz</span></nav>
+    <div class="ph">
+      <div><span class="ph__kicker">Tone of Voice</span><h1>Guía de tono · v3.2</h1><p>Las reglas con las que el agente SSoT escribe cada tipo de documento.</p></div>
+    </div>
+
+    <div class="banner" role="note"><i data-lucide="sparkles"></i><p><strong>Insight del agente:</strong> el 8 % de las notas de prensa de las últimas 2 semanas usaron un tono más promocional del recomendado. La regla 3 de «Notas de prensa institucionales» lo permite.</p><a class="link" href="#" data-soon="Abriendo los 14 ejemplos (próximamente)">Ver 14 ejemplos</a></div>
+
+    <div class="grid">
+      <!-- Types -->
+      <nav aria-label="Tipos de documento">
+        <p class="lbl">Tipo de documento</p>
+        <ul class="types" role="tablist">
+          <li><button class="type" role="tab" aria-selected="true" type="button"><i data-lucide="newspaper"></i><span>Notas de prensa institucionales<small>5 reglas</small></span></button></li>
+          <li><button class="type" role="tab" aria-selected="false" type="button" data-soon><i data-lucide="megaphone"></i><span>Comunicación interna<small>6 reglas</small></span></button></li>
+          <li><button class="type" role="tab" aria-selected="false" type="button" data-soon><i data-lucide="share-2"></i><span>Redes sociales<small>8 reglas</small></span></button></li>
+          <li><button class="type" role="tab" aria-selected="false" type="button" data-soon><i data-lucide="presentation"></i><span>Presentaciones ejecutivas<small>5 reglas</small></span></button></li>
+          <li><button class="type" role="tab" aria-selected="false" type="button" data-soon><i data-lucide="list-checks"></i><span>Q&amp;A para portavoces<small>4 reglas</small></span></button></li>
+        </ul>
+      </nav>
+
+      <!-- Rules -->
+      <div style="display:grid;gap:var(--s-5)">
+        <section class="panel" aria-labelledby="reg-title">
+          <div class="panel__head"><h2 id="reg-title"><i data-lucide="sliders-horizontal"></i>Registro</h2></div>
+          <div class="scale" role="radiogroup" aria-label="Registro">
+            <label><input type="radio" name="reg"><span>Cercano<small>Tú, frases cortas</small></span></label>
+            <label><input type="radio" name="reg"><span>Neutro<small>Informativo</small></span></label>
+            <label><input type="radio" name="reg" checked><span>Institucional<small>Sobrio, verificable</small></span></label>
+          </div>
+        </section>
+
+        <section class="panel" aria-labelledby="rules-title">
+          <div class="panel__head"><h2 id="rules-title"><i data-lucide="list-ordered"></i>Directrices</h2><span class="panel__meta">Notas de prensa institucionales</span></div>
+          <ol class="rules">
+            <li class="rule"><div><p>Empieza por el hecho principal: qué, quién, cuándo y dónde.</p></div><span></span></li>
+            <li class="rule"><div><p>Toda cifra lleva fuente verificable.</p></div><span></span></li>
+            <li class="rule rule--flag" id="r3"><div id="r3-body"><p id="r3-text">Se pueden usar adjetivos valorativos para destacar productos y servicios.</p><small><i data-lucide="triangle-alert"></i>Relacionada con el 8 % de notas fuera de tono</small></div><button class="btn btn--primary" type="button" id="edit"><i data-lucide="pencil"></i>Editar</button></li>
+            <li class="rule"><div><p>Cita a un portavoz con cargo completo.</p></div><span></span></li>
+            <li class="rule"><div><p>Cierra con el párrafo corporativo vigente.</p></div><span></span></li>
+          </ol>
+        </section>
+
+        <section class="panel" aria-labelledby="voc-title">
+          <div class="panel__head"><h2 id="voc-title"><i data-lucide="spell-check"></i>Vocabulario</h2></div>
+          <div class="vocab">
+            <div class="say"><h3 style="color:var(--turquoise-very-dark)"><i data-lucide="check"></i>Decimos</h3><ul><li>movimiento competitivo</li><li>lideramos la cobertura</li><li>disponible desde hoy</li></ul></div>
+            <div class="avoid"><h3 style="color:var(--coral-dark)"><i data-lucide="x"></i>Evitamos</h3><ul id="avoid"><li>ataque comercial</li><li>la mejor red de Europa</li></ul></div>
+          </div>
+        </section>
+
+        <section class="panel" aria-labelledby="pv-title">
+          <div class="panel__head"><h2 id="pv-title"><i data-lucide="eye"></i>Así escribirá el agente</h2><span class="panel__meta">Ejemplo real de la semana 38</span></div>
+          <div class="prev">
+            <div class="prev__row"><p class="lbl">Con la regla actual</p><p>Telefónica lanza la <mark>revolucionaria</mark> fibra de 10 Gb, la <mark>oferta más imbatible</mark> del mercado.</p></div>
+            <div class="prev__row prev__row--after" id="after" hidden><p class="lbl" style="color:var(--turquoise-very-dark)">Con la regla nueva</p><p>Telefónica lanza la fibra de 10 Gb, disponible desde hoy en 12 ciudades españolas.</p></div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Pending -->
+      <aside class="side">
+        <section class="panel pend" aria-labelledby="pend-title" aria-live="polite">
+          <div class="panel__head"><h2 id="pend-title"><i data-lucide="brain-circuit"></i>Cambios sin entrenar</h2></div>
+          <div class="pend__count num" id="pcount">1</div>
+          <ul id="plist">
+            <li id="p-pub" hidden><i data-lucide="layout-template"></i>Plantilla resultados semestrales v2</li>
+            <li><i data-lucide="book-open"></i>Guía de sostenibilidad 2026</li>
+          </ul>
+          <a class="btn btn--primary" href="javier-training.html" id="train"><i data-lucide="brain-circuit"></i>Entrenar agente</a>
+          <p class="note" style="margin:var(--s-3) 0 0;font-size:13px;color:var(--grey-6);display:flex;gap:6px"><i data-lucide="info" style="width:16px;height:16px;flex-shrink:0"></i>El agente sigue usando la v3.2 hasta que lo entrenes.</p>
+        </section>
+      </aside>
+    </div>
+  </main>
+</div>
+
+<script src="assets/javier.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script>
+  const pub = new URLSearchParams(location.search).has('pub');
+  let pending = 1 + (pub ? 1 : 0);
+  if (pub) { document.getElementById('p-pub').hidden = false; document.getElementById('train').href = 'javier-training.html?pub=1'; }
+  document.getElementById('pcount').textContent = pending;
+  const r3 = document.getElementById('r3'), body = document.getElementById('r3-body'), editBtn = document.getElementById('edit');
+  const original = body.innerHTML;
+  const suggestion = 'Evita adjetivos promocionales (revolucionario, imbatible, el mejor). Destaca el producto con datos verificables: disponibilidad, cobertura o fecha.';
+
+  editBtn.addEventListener('click', () => {
+    editBtn.hidden = true;
+    body.innerHTML = `<p style="color:var(--grey-6);text-decoration:line-through">Se pueden usar adjetivos valorativos para destacar productos y servicios.</p>
+      <div class="editor">
+        <label for="rt">Nueva redacción de la regla 3</label>
+        <span class="aihint"><i data-lucide="sparkles"></i>Propuesta del agente a partir de los 14 ejemplos</span>
+        <textarea id="rt">${suggestion}</textarea>
+        <div class="editor__act"><button class="btn btn--primary" type="button" id="save"><i data-lucide="check"></i>Guardar regla</button><button class="btn btn--ghost" type="button" id="cancel">Cancelar</button></div>
+        <span class="err" id="err" hidden><i data-lucide="circle-alert"></i>La regla no puede quedar vacía.</span>
+      </div>`;
+    draw(); document.getElementById('rt').focus();
+    document.getElementById('cancel').addEventListener('click', () => { body.innerHTML = original; editBtn.hidden = false; draw(); });
+    document.getElementById('save').addEventListener('click', save);
+  });
+
+  function save() {
+    const txt = document.getElementById('rt').value.trim();
+    if (!txt) { document.getElementById('err').hidden = false; return; }
+    r3.className = 'rule rule--new';
+    body.innerHTML = `<p>${txt.replace(/</g, '&lt;')}</p><small><i data-lucide="pencil"></i>Editada hoy · pendiente de entrenar</small>`;
+    // vocabulary + preview + pending
+    const avoid = document.getElementById('avoid');
+    ['revolucionario', 'imbatible'].forEach(w => avoid.insertAdjacentHTML('beforeend', `<li class="is-new">${w}</li>`));
+    document.getElementById('after').hidden = false;
+    document.getElementById('pcount').textContent = pending + 1;
+    document.getElementById('plist').insertAdjacentHTML('afterbegin', '<li class="is-new"><i data-lucide="message-square-quote"></i>Regla 3 · Notas de prensa institucionales</li>');
+    const t = document.getElementById('train'); t.innerHTML = '<i data-lucide="brain-circuit"></i>Guardar y entrenar agente'; t.href = 'javier-training.html?' + (pub ? 'pub=1&' : '') + 'rule=1';
+    draw(); showToast('Regla guardada · se aplicará al entrenar el agente');
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,774 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SSoT · Briefing ejecutivo — María Jiménez</title>
+<link rel="stylesheet" href="assets/ssot.css">
+<style>
+.ws { padding: var(--s-6) var(--s-10) var(--s-12); max-width: 1440px; width: 100%; }
+
+/* Header */
+.crumbs { display: flex; align-items: center; gap: var(--s-2); font-size: 13px; color: var(--grey-6); }
+.crumbs a { color: var(--blue); font-weight: 500; }
+.crumbs a:hover { text-decoration: underline; text-underline-offset: 3px; }
+.crumbs svg { width: 14px; height: 14px; }
+.ws__head { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--s-6); margin: var(--s-3) 0 var(--s-5); }
+.ws__title { margin: 0; font-size: 28px; line-height: 1.2; font-weight: 500; letter-spacing: -.015em; }
+.ws__save { font-size: 13px; color: var(--grey-6); display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+.ws__save svg { width: 16px; height: 16px; }
+
+/* Stepper */
+.steps { list-style: none; margin: 0 0 var(--s-5); padding: var(--s-2); display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--s-2); background: var(--grey-0); border: 1px solid var(--grey-2); border-radius: var(--r-card); }
+.step { display: flex; align-items: center; gap: var(--s-3); height: 52px; padding: 0 var(--s-4); border-radius: var(--r-ctrl); color: var(--grey-6); font-weight: 500; border: 0; background: transparent; text-align: left; width: 100%; }
+.step__n { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; font-weight: 600; border: 1.5px solid var(--grey-3); color: var(--grey-6); flex-shrink: 0; }
+.step__n svg { width: 16px; height: 16px; }
+.step small { display: block; font-size: 12px; font-weight: 400; color: var(--grey-5); line-height: 1.2; }
+.step[aria-current="step"] { background: var(--blue-tint); color: var(--blue); font-weight: 600; }
+.step[aria-current="step"] .step__n { background: var(--blue); border-color: var(--blue); color: var(--grey-0); }
+.step.is-done { color: var(--grey-8); cursor: pointer; }
+.step.is-done:hover { background: var(--grey-1); }
+.step.is-done .step__n { background: var(--turquoise-very-light); border-color: var(--turquoise-very-dark); color: var(--turquoise-very-dark); }
+.step:disabled { cursor: default; }
+
+/* Request */
+.ask { display: flex; gap: var(--s-3); align-items: flex-start; padding: var(--s-3) var(--s-4); margin-bottom: var(--s-5); background: var(--grey-0); border: 1px solid var(--grey-2); border-radius: var(--r-card); font-size: 14px; color: var(--grey-8); }
+.ask .avatar { width: 28px; height: 28px; font-size: 11px; }
+.ask p { margin: 3px 0 0; flex: 1; }
+.ask a { font-size: 13px; font-weight: 600; color: var(--blue); white-space: nowrap; margin-top: 4px; }
+
+/* Grid */
+.grid { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: var(--s-6); align-items: start; }
+.side { position: sticky; top: var(--s-6); display: flex; flex-direction: column; gap: var(--s-4); max-height: calc(100vh - 48px); }
+.side .panel { display: flex; flex-direction: column; min-height: 0; max-height: max(440px, calc(100vh - 320px)); }
+.side__scroll { flex: 1 1 auto; overflow: auto; min-height: 0; margin: 0 calc(var(--s-5) * -1); padding: 0 var(--s-5); }
+.side__foot { padding-top: var(--s-4); margin-top: var(--s-4); border-top: 1px solid var(--grey-2); display: flex; flex-direction: column; gap: var(--s-2); }
+.side__foot .btn { width: 100%; }
+.side__note { font-size: 13px; color: var(--grey-6); margin: 0; display: flex; gap: 6px; align-items: flex-start; }
+.side__note svg { width: 16px; height: 16px; margin-top: 2px; }
+.side__note.is-warn { color: var(--yellow-very-dark); font-weight: 500; }
+.side__note.is-error { color: var(--coral-dark); font-weight: 500; }
+.btn:disabled { background: var(--grey-2); color: var(--grey-6); cursor: not-allowed; transform: none; }
+.lbl { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--grey-6); margin: 0 0 var(--s-2); }
+
+/* Step 1: sources */
+.src-intro { display: flex; justify-content: space-between; align-items: center; gap: var(--s-4); margin-bottom: var(--s-3); }
+.src-intro h2 { margin: 0; font-size: 18px; font-weight: 600; display: flex; align-items: center; gap: var(--s-2); }
+.src-intro h2 svg { color: var(--blue); }
+.srcs { list-style: none; margin: 0; padding: 0; }
+.src { display: grid; grid-template-columns: 24px 40px 1fr auto; gap: var(--s-3); align-items: center; padding: var(--s-3) var(--s-3); border-radius: var(--r-ctrl); cursor: pointer; min-height: 72px; transition: background .15s; }
+.src + .src { border-top: 1px solid var(--grey-1); }
+.src:hover { background: var(--grey-1); }
+.src input { width: 20px; height: 20px; accent-color: var(--blue); cursor: pointer; margin: 0; }
+.src__icon { width: 40px; height: 40px; border-radius: var(--r-ctrl); display: grid; place-items: center; background: var(--blue-tint); color: var(--blue); }
+.src__icon svg { width: 20px; height: 20px; }
+.src__title { margin: 0; font-weight: 500; line-height: 1.35; }
+.src__meta { margin: 2px 0 0; font-size: 13px; color: var(--grey-6); }
+.src.is-off .src__title, .src.is-off .src__icon { opacity: .55; }
+.src--old .src__icon { background: var(--grey-1); color: var(--grey-6); }
+.rel { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--grey-6); white-space: nowrap; }
+.rel__bar { width: 48px; height: 6px; border-radius: 3px; background: var(--grey-2); overflow: hidden; }
+.rel__bar span { display: block; height: 100%; background: var(--blue); border-radius: 3px; }
+.src__end { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.add-src { margin-top: var(--s-3); }
+
+.cfg dl { margin: 0; display: grid; gap: var(--s-3); }
+.cfg dt { font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--grey-6); }
+.cfg dd { margin: 2px 0 0; font-weight: 500; display: flex; align-items: center; gap: var(--s-2); }
+.cfg dd svg { width: 16px; height: 16px; color: var(--blue); }
+.outline { list-style: none; margin: var(--s-2) 0 0; padding: 0; display: grid; gap: 6px; counter-reset: o; }
+.outline li { counter-increment: o; display: flex; gap: var(--s-2); align-items: center; font-size: 14px; padding: 6px var(--s-3); background: var(--grey-1); border-radius: var(--r-ctrl); }
+.outline li::before { content: counter(o); font-size: 12px; font-weight: 600; color: var(--blue); width: 16px; }
+
+/* Document */
+.doc { background: var(--grey-0); border: 1px solid var(--grey-2); border-radius: var(--r-card); box-shadow: var(--shadow-1); padding: var(--s-10) var(--s-12) var(--s-12); }
+.doc__kicker { display: flex; align-items: center; gap: var(--s-3); flex-wrap: wrap; font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--grey-6); }
+.doc__kicker img { height: 18px; }
+.doc h1 { margin: var(--s-4) 0 var(--s-3); font-size: 32px; line-height: 1.2; font-weight: 500; letter-spacing: -.015em; max-width: 24ch; }
+.doc__meta { display: flex; flex-wrap: wrap; gap: var(--s-2) var(--s-5); font-size: 13px; color: var(--grey-6); padding-bottom: var(--s-5); border-bottom: 1px solid var(--grey-2); }
+.doc__meta span { display: inline-flex; align-items: center; gap: 6px; }
+.doc__meta svg { width: 14px; height: 14px; }
+.doc__meta .doc__vig { display: none; }
+.doc.is-vigente .doc__meta .doc__vig { display: inline-flex; }
+.sec { margin-top: var(--s-6); }
+.sec h2 { margin: 0 0 var(--s-2); font-size: 18px; font-weight: 600; color: var(--grey-9); display: flex; align-items: baseline; gap: var(--s-2); }
+.sec h2 b { font-size: 13px; color: var(--blue); font-weight: 600; }
+.sec p, .sec li { font-size: 16px; line-height: 1.65; color: var(--grey-8); }
+.sec p { margin: 0; }
+.sec ul, .sec ol { margin: 0; padding-left: 22px; display: grid; gap: 4px; }
+.sec .skel { display: none; }
+.sec.is-pending .body { display: none; }
+.sec.is-pending .skel { display: grid; gap: 10px; padding-top: 6px; }
+.sec.is-hidden { display: none; }
+.skel i { display: block; height: 12px; border-radius: 6px; background: linear-gradient(90deg, var(--grey-1), var(--grey-2), var(--grey-1)); background-size: 200% 100%; animation: shimmer 1.2s linear infinite; }
+.skel i:nth-child(2) { width: 92%; } .skel i:nth-child(3) { width: 64%; }
+.sec.is-in .body { animation: rise .35s var(--ease-out) both; }
+.sec.is-writing h2::after { content: "Redactando…"; font-size: 12px; font-weight: 500; color: var(--blue); margin-left: var(--s-2); }
+
+.cite { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 5px; margin: 0 1px; vertical-align: 2px; border-radius: 4px; border: 0; font-size: 11px; font-weight: 600; background: var(--blue-tint); color: var(--blue); cursor: default; }
+[data-step="3"] .cite { cursor: pointer; }
+[data-step="3"] .cite:hover, .cite.is-hl { background: var(--blue); color: var(--grey-0); }
+
+/* Editable paragraph */
+.para { position: relative; border-radius: var(--r-ctrl); margin: 0 calc(var(--s-3) * -1); padding: var(--s-2) var(--s-3); transition: background .15s, box-shadow .15s; }
+[data-step="3"] .para:hover, [data-step="3"] .para:focus-within { background: var(--grey-1); box-shadow: inset 0 0 0 1px var(--grey-2); }
+.para__tools { position: absolute; right: var(--s-2); top: -18px; display: none; gap: 2px; padding: 3px; background: var(--grey-0); border: 1px solid var(--grey-2); border-radius: var(--r-ctrl); box-shadow: var(--shadow-2); z-index: 2; }
+[data-step="3"] .para:hover .para__tools, [data-step="3"] .para:focus-within .para__tools { display: flex; }
+.tool { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 var(--s-3); border: 0; border-radius: 6px; background: transparent; font-size: 13px; font-weight: 500; color: var(--grey-8); }
+.tool svg { width: 15px; height: 15px; color: var(--blue); }
+.tool:hover { background: var(--blue-tint); color: var(--blue); }
+.para.is-busy .body-text { opacity: .35; }
+.para.is-new { animation: flash 1.2s var(--ease-out); }
+
+.flag { background: var(--yellow-very-light); color: inherit; border-bottom: 2px solid var(--yellow-dark, #A7863E); padding: 0 2px; border-radius: 2px; cursor: pointer; }
+[data-step="4"] .flag, [data-step="2"] .flag { background: none; border: 0; padding: 0; cursor: text; }
+.fixed { background: var(--turquoise-very-light); border-radius: 2px; transition: background 1.5s 1s; }
+.fixed.is-settled { background: transparent; }
+
+/* Right panel tabs */
+.tabs { display: flex; gap: 2px; padding: 3px; background: var(--grey-1); border-radius: var(--r-ctrl); margin-bottom: var(--s-4); }
+.tab { flex: 1; height: 40px; border: 0; border-radius: 6px; background: transparent; font-weight: 500; color: var(--grey-7); display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-size: 14px; }
+.tab svg { width: 16px; height: 16px; }
+.tab[aria-selected="true"] { background: var(--grey-0); color: var(--grey-9); font-weight: 600; box-shadow: var(--shadow-1); }
+.tab .count { font-size: 12px; font-weight: 600; border-radius: var(--r-pill); padding: 0 7px; line-height: 18px; background: var(--grey-2); color: var(--grey-8); }
+.tab .count.is-warn { background: var(--yellow-very-light); color: var(--yellow-very-dark); }
+.tab .count.is-ok { background: var(--turquoise-very-light); color: var(--turquoise-very-dark); }
+
+.scard { padding: var(--s-3); border: 1px solid var(--grey-2); border-radius: var(--r-ctrl); transition: border-color .2s, box-shadow .2s, background .2s; }
+.scard + .scard { margin-top: var(--s-2); }
+.scard__head { display: flex; gap: var(--s-2); align-items: flex-start; }
+.scard__n { min-width: 22px; height: 22px; border-radius: 4px; display: grid; place-items: center; font-size: 12px; font-weight: 600; background: var(--blue-tint); color: var(--blue); flex-shrink: 0; }
+.scard__title { margin: 0; font-size: 14px; font-weight: 600; line-height: 1.35; }
+.scard__meta { margin: 2px 0 0; font-size: 12px; color: var(--grey-6); }
+.scard blockquote { margin: var(--s-2) 0 0; padding: var(--s-2) var(--s-3); border-left: 2px solid var(--grey-3); font-size: 13px; color: var(--grey-7); background: var(--grey-1); border-radius: 0 6px 6px 0; }
+.scard.is-hl { border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-tint); }
+.scard.is-hl .scard__n { background: var(--blue); color: var(--grey-0); }
+
+.tone-sum { display: flex; align-items: center; gap: var(--s-3); padding: var(--s-3) var(--s-4); border-radius: var(--r-ctrl); margin-bottom: var(--s-3); font-weight: 600; font-size: 14px; }
+.tone-sum svg { width: 20px; height: 20px; }
+.tone-sum small { display: block; font-weight: 400; font-size: 12px; }
+.tone-sum--warn { background: var(--yellow-very-light); color: var(--yellow-very-dark); }
+.tone-sum--ok { background: var(--turquoise-very-light); color: var(--turquoise-very-dark); }
+.tsug { padding: var(--s-3); border: 1px solid var(--grey-2); border-radius: var(--r-ctrl); transition: opacity .3s; }
+.tsug + .tsug { margin-top: var(--s-2); }
+.tsug.is-hl { border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-tint); }
+.tsug__rule { font-size: 12px; color: var(--grey-6); margin: 0 0 6px; display: flex; gap: 6px; align-items: center; }
+.tsug__rule svg { width: 14px; height: 14px; }
+.tsug__swap { margin: 0; font-size: 14px; line-height: 1.5; }
+.tsug__swap del { color: var(--coral-dark); text-decoration-thickness: 1.5px; }
+.tsug__swap ins { text-decoration: none; color: var(--turquoise-very-dark); font-weight: 600; }
+.tsug__act { display: flex; gap: var(--s-2); margin-top: var(--s-3); }
+.tsug__act .btn { height: 36px; font-size: 13px; padding: 0 var(--s-3); }
+.tsug.is-done { opacity: .6; }
+.tsug.is-done .tsug__act { display: none; }
+.tsug__state { display: none; font-size: 13px; font-weight: 600; color: var(--turquoise-very-dark); margin-top: var(--s-2); align-items: center; gap: 4px; }
+.tsug__state svg { width: 14px; height: 14px; }
+.tsug.is-done .tsug__state { display: flex; }
+
+/* Progress (step 2) */
+.prog { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s-3); }
+.prog li { display: flex; gap: var(--s-3); align-items: flex-start; font-size: 14px; color: var(--grey-5); }
+.prog li small { display: block; font-size: 12px; color: var(--grey-6); }
+.prog li.is-active { color: var(--grey-9); font-weight: 500; }
+.prog li.is-done { color: var(--grey-7); }
+.prog .dot { width: 20px; height: 20px; display: grid; place-items: center; flex-shrink: 0; }
+.prog .dot svg { width: 18px; height: 18px; }
+.prog li.is-active .dot { color: var(--blue); }
+.prog li.is-done .dot { color: var(--turquoise-very-dark); }
+
+/* Export (step 4) */
+.xrow { border: 1px solid var(--grey-2); border-radius: var(--r-ctrl); padding: var(--s-3) var(--s-4); transition: border-color .15s, background .15s; }
+.xrow + .xrow { margin-top: var(--s-3); }
+.xrow.is-on { border-color: var(--blue); }
+.xrow__head { display: flex; align-items: center; gap: var(--s-3); cursor: pointer; min-height: 32px; }
+.xrow__head input { width: 20px; height: 20px; accent-color: var(--blue); margin: 0; cursor: pointer; }
+.xrow__head strong { font-weight: 600; font-size: 15px; display: flex; align-items: center; gap: 6px; }
+.xrow__head strong svg { width: 18px; height: 18px; color: var(--blue); }
+.xrow__body { margin: var(--s-3) 0 0 32px; display: grid; gap: var(--s-3); }
+.xrow:not(.is-on) .xrow__body { display: none; }
+.xrow__hint { margin: 0; font-size: 13px; color: var(--grey-6); }
+.seg { display: flex; gap: 6px; flex-wrap: wrap; }
+.seg label { cursor: pointer; }
+.seg input { position: absolute; opacity: 0; pointer-events: none; }
+.seg span { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 var(--s-3); border: 1px solid var(--grey-2); border-radius: var(--r-ctrl); font-size: 13px; font-weight: 500; color: var(--grey-8); transition: all .15s; }
+.seg span svg { width: 15px; height: 15px; }
+.seg input:checked + span { border-color: var(--blue); background: var(--blue-tint); color: var(--blue); font-weight: 600; }
+.seg input:focus-visible + span { outline: 2px solid var(--blue); outline-offset: 2px; }
+.recips { display: flex; flex-wrap: wrap; gap: 6px; }
+.recip { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; padding: 4px 6px 4px 10px; border-radius: var(--r-pill); background: var(--grey-1); border: 1px solid var(--grey-2); }
+.recip button { border: 0; background: transparent; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; color: var(--grey-6); padding: 0; }
+.recip button:hover { background: var(--grey-2); color: var(--grey-9); }
+.recip button svg { width: 13px; height: 13px; }
+.field label { display: block; font-size: 13px; font-weight: 500; color: var(--grey-7); margin-bottom: 4px; }
+.field textarea { width: 100%; min-height: 76px; resize: vertical; padding: var(--s-2) var(--s-3); border: 1px solid var(--grey-3); border-radius: var(--r-ctrl); font-size: 14px; line-height: 1.45; }
+.field textarea:focus { outline: 0; border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-tint); }
+
+.done { text-align: left; }
+.done__icon { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; background: var(--turquoise-very-light); color: var(--turquoise-very-dark); margin-bottom: var(--s-4); animation: pop .35s var(--ease-out) both; }
+.done__icon svg { width: 28px; height: 28px; }
+.done h2 { margin: 0 0 var(--s-2); font-size: 22px; font-weight: 600; }
+.done ul { list-style: none; margin: var(--s-4) 0; padding: 0; display: grid; gap: var(--s-3); }
+.done li { display: flex; gap: var(--s-3); align-items: flex-start; font-size: 14px; }
+.done li svg { width: 18px; height: 18px; color: var(--turquoise-very-dark); margin-top: 2px; }
+.done li small { display: block; color: var(--grey-6); font-size: 12px; }
+
+/* Action toast with undo */
+.toast.toast--act { pointer-events: auto; padding: var(--s-2) var(--s-2) var(--s-2) var(--s-4); }
+.toast button { border: 0; background: transparent; color: #8FB8FF; font-weight: 600; height: 32px; padding: 0 var(--s-3); border-radius: 6px; }
+.toast button:hover { background: var(--grey-8); }
+
+[hidden] { display: none !important; }
+@keyframes shimmer { to { background-position: -200% 0; } }
+@keyframes flash { 0% { background: var(--blue-tint); } 100% { background: transparent; } }
+@media (max-width: 1180px) { .grid { grid-template-columns: 1fr; } .side { position: static; max-height: none; } .steps { grid-template-columns: 1fr 1fr; } .doc { padding: var(--s-6); } }
+</style>
+</head>
+<body data-step="1">
+<div class="app">
+
+  <nav class="nav" aria-label="Principal">
+    <div class="nav__brand">
+      <img src="assets/logo-blue-horizontal.png" alt="Telefónica">
+      <span class="nav__product">SSoT</span>
+    </div>
+    <ul class="nav__list">
+      <li><a class="nav__link" href="index.html"><i data-lucide="house"></i>Inicio</a></li>
+      <li><a class="nav__link" href="#" aria-current="page"><i data-lucide="sparkles"></i>Crear con IA</a></li>
+      <li><a class="nav__link" href="#" data-soon><i data-lucide="file-text"></i>Mis documentos</a></li>
+      <li><a class="nav__link" href="#" data-soon><i data-lucide="message-square"></i>Conversaciones</a></li>
+      <li><a class="nav__link" href="#" data-soon><i data-lucide="calendar-days"></i>Campañas</a></li>
+      <li><a class="nav__link" href="#" data-soon><i data-lucide="newspaper"></i>Cobertura<span class="nav__badge num">12</span></a></li>
+      <li><a class="nav__link" href="#" data-soon><i data-lucide="chart-line"></i>KPIs</a></li>
+    </ul>
+    <div class="nav__foot">
+      <a class="nav__link" href="#" data-soon><i data-lucide="circle-help"></i>Ayuda</a>
+      <div class="nav__me">
+        <span class="avatar" aria-hidden="true">MJ</span>
+        <div><strong>María Jiménez</strong><small>Comunicación Corporativa</small></div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="ws">
+    <nav class="crumbs" aria-label="Ruta"><a href="index.html">Inicio</a><i data-lucide="chevron-right"></i><span>Crear con IA</span><i data-lucide="chevron-right"></i><span>Briefing ejecutivo</span></nav>
+    <div class="ws__head">
+      <h1 class="ws__title">Briefing ejecutivo · Resultados T3 de Competidor X</h1>
+      <span class="ws__save" id="save"><i data-lucide="cloud"></i>Guardado automáticamente · borrador</span>
+    </div>
+
+    <ol class="steps" aria-label="Pasos">
+      <li><button class="step" data-go="1" type="button"><span class="step__n">1</span><span>Fuentes<small>Qué usará la IA</small></span></button></li>
+      <li><button class="step" data-go="2" type="button"><span class="step__n">2</span><span>Redacción<small>Borrador con citas</small></span></button></li>
+      <li><button class="step" data-go="3" type="button"><span class="step__n">3</span><span>Revisión<small>Fuentes y tono</small></span></button></li>
+      <li><button class="step" data-go="4" type="button"><span class="step__n">4</span><span>Exportar<small>Descargar, enviar, guardar</small></span></button></li>
+    </ol>
+
+    <div class="ask">
+      <span class="avatar" aria-hidden="true">MJ</span>
+      <p>Prepara un briefing ejecutivo para Dirección sobre los resultados trimestrales de Competidor X y el aumento del 18 % en menciones sobre redes de fibra en medios europeos. Incluye riesgos, mensajes clave y fuentes.</p>
+      <a href="index.html">Editar petición</a>
+    </div>
+
+    <div class="grid">
+      <!-- ===== LEFT ===== -->
+      <div>
+        <!-- Step 1: sources -->
+        <section class="panel" data-steps="1" aria-labelledby="src-title">
+          <div class="src-intro">
+            <h2 id="src-title"><i data-lucide="search-check"></i>He encontrado 7 fuentes para tu briefing</h2>
+            <span class="panel__meta">Ordenadas por relevancia</span>
+          </div>
+          <ul class="srcs" id="srcs">
+            <li><label class="src"><input type="checkbox" value="1" checked><span class="src__icon"><i data-lucide="file-bar-chart"></i></span>
+              <span><p class="src__title">Resultados T3 2026 · Competidor X</p><p class="src__meta">Informe externo · web corporativa · hoy, 07:40</p></span>
+              <span class="src__end"><span class="status status--ok"><i data-lucide="check"></i>Vigente</span><span class="rel">Relevancia<span class="rel__bar"><span style="width:98%"></span></span></span></span></label></li>
+            <li><label class="src"><input type="checkbox" value="2" checked><span class="src__icon"><i data-lucide="trending-up"></i></span>
+              <span><p class="src__title">Menciones «redes de fibra» en medios europeos · 12 h</p><p class="src__meta">Social listening · 214 artículos · actualizado 08:30</p></span>
+              <span class="src__end"><span class="status status--ok"><i data-lucide="check"></i>Vigente</span><span class="rel">Relevancia<span class="rel__bar"><span style="width:95%"></span></span></span></span></label></li>
+            <li><label class="src"><input type="checkbox" value="3" checked><span class="src__icon"><i data-lucide="file-text"></i></span>
+              <span><p class="src__title">Resultados T2 2026 · Telefónica</p><p class="src__meta">Informe interno · SharePoint Relación con Inversores · 28 jul</p></span>
+              <span class="src__end"><span class="status status--ok"><i data-lucide="check"></i>Vigente</span><span class="rel">Relevancia<span class="rel__bar"><span style="width:84%"></span></span></span></span></label></li>
+            <li><label class="src"><input type="checkbox" value="4" checked><span class="src__icon"><i data-lucide="compass"></i></span>
+              <span><p class="src__title">Ejes estratégicos de comunicación 2026</p><p class="src__meta">Documento corporativo · v2.0 · Comunicación Corporativa</p></span>
+              <span class="src__end"><span class="status status--ok"><i data-lucide="check"></i>Vigente</span><span class="rel">Relevancia<span class="rel__bar"><span style="width:76%"></span></span></span></span></label></li>
+            <li><label class="src"><input type="checkbox" value="5" checked><span class="src__icon"><i data-lucide="presentation"></i></span>
+              <span><p class="src__title">Argumentario 5G y fibra para portavoces</p><p class="src__meta">Documento corporativo · v7 · editado el lunes</p></span>
+              <span class="src__end"><span class="status status--ok"><i data-lucide="check"></i>Vigente</span><span class="rel">Relevancia<span class="rel__bar"><span style="width:71%"></span></span></span></span></label></li>
+            <li><label class="src"><input type="checkbox" value="6" checked><span class="src__icon"><i data-lucide="book-open-check"></i></span>
+              <span><p class="src__title">Guía de tono de voz</p><p class="src__meta">Brand & Content Governance · v3.2 · ayer, 23:10 · se usa para revisar el tono</p></span>
+              <span class="src__end"><span class="status status--ok"><i data-lucide="check"></i>Vigente</span><span class="rel">Relevancia<span class="rel__bar"><span style="width:60%"></span></span></span></span></label></li>
+            <li><label class="src src--old is-off"><input type="checkbox" value="7"><span class="src__icon"><i data-lucide="archive"></i></span>
+              <span><p class="src__title">Guía de tono de voz</p><p class="src__meta">v3.1 · sustituida ayer por la v3.2 · no recomendada</p></span>
+              <span class="src__end"><span class="status status--warn"><i data-lucide="history"></i>Versión anterior</span><span class="rel">Relevancia<span class="rel__bar"><span style="width:58%"></span></span></span></span></label></li>
+          </ul>
+          <button class="btn btn--ghost add-src" type="button" data-soon><i data-lucide="plus"></i>Añadir otra fuente</button>
+        </section>
+
+        <!-- Steps 2–4: document -->
+        <article class="doc" id="doc" data-steps="2 3 4" hidden>
+          <div class="doc__kicker"><img src="assets/logo-blue-horizontal.png" alt="Telefónica"><span>Comunicación Corporativa · Uso interno</span></div>
+          <h1>Resultados T3 de Competidor X y conversación sobre redes de fibra</h1>
+          <div class="doc__meta">
+            <span><i data-lucide="users"></i>Para: Comité de Dirección</span>
+            <span><i data-lucide="user"></i>María Jiménez</span>
+            <span class="num"><i data-lucide="calendar"></i>6 oct 2026</span>
+            <span><i data-lucide="flask-conical"></i>Prototipo · datos de ejemplo</span>
+            <span class="doc__vig status status--ok"><i data-lucide="badge-check"></i>Versión vigente v1</span>
+          </div>
+
+          <section class="sec" data-label="Resumen ejecutivo">
+            <h2><b>1</b>Resumen ejecutivo</h2>
+            <div class="skel"><i></i><i></i><i></i></div>
+            <div class="body">
+              <div class="para" tabindex="0" data-edit="resumen">
+                <div class="para__tools" role="toolbar" aria-label="Editar párrafo">
+                  <button class="tool" type="button" data-act="short"><i data-lucide="minimize-2"></i>Acortar</button>
+                  <button class="tool" type="button" data-act="formal"><i data-lucide="briefcase"></i>Más formal</button>
+                  <button class="tool" type="button" data-act="regen"><i data-lucide="refresh-cw"></i>Regenerar</button>
+                </div>
+                <p class="body-text">Competidor X ha presentado hoy sus resultados del tercer trimestre, con un crecimiento del 6 % en ingresos de fibra <button class="cite" data-c="1">1</button>. En paralelo, las menciones sobre redes de fibra en medios europeos han aumentado un 18 % en las últimas 12 horas <button class="cite" data-c="2">2</button>. Telefónica aparece en el 31 % de esa conversación, con un tono mayoritariamente neutro.</p>
+              </div>
+            </div>
+          </section>
+
+          <section class="sec" data-label="Qué ha pasado">
+            <h2><b>2</b>Qué ha pasado</h2>
+            <div class="skel"><i></i><i></i><i></i></div>
+            <div class="body"><ul>
+              <li>Competidor X anuncia 1,2 millones de nuevos hogares conectados con fibra en el trimestre <button class="cite" data-c="1">1</button>.</li>
+              <li>Alemania y Reino Unido concentran el 58 % de las menciones; España, el 14 % <button class="cite" data-c="2">2</button>.</li>
+              <li>Varios medios comparan su ritmo de despliegue con nuestros resultados del T2 <button class="cite" data-c="2">2</button><button class="cite" data-c="3">3</button>.</li>
+            </ul></div>
+          </section>
+
+          <section class="sec" data-label="Impacto para Telefónica">
+            <h2><b>3</b>Impacto para Telefónica</h2>
+            <div class="skel"><i></i><i></i><i></i></div>
+            <div class="body">
+              <div class="para" tabindex="0" data-edit="impacto">
+                <div class="para__tools" role="toolbar" aria-label="Editar párrafo">
+                  <button class="tool" type="button" data-act="short"><i data-lucide="minimize-2"></i>Acortar</button>
+                  <button class="tool" type="button" data-act="formal"><i data-lucide="briefcase"></i>Más formal</button>
+                  <button class="tool" type="button" data-act="regen"><i data-lucide="refresh-cw"></i>Regenerar</button>
+                </div>
+                <p class="body-text">El anuncio puede leerse como un <mark class="flag" data-t="t1">ataque comercial</mark> en los mercados donde competimos directamente, sobre todo en Alemania <button class="cite" data-c="2">2</button>. Nuestra posición sigue siendo sólida: lideramos la cobertura de fibra en España <button class="cite" data-c="3">3</button> y el plan de despliegue de 2026 avanza según lo previsto <button class="cite" data-c="4">4</button>.</p>
+              </div>
+            </div>
+          </section>
+
+          <section class="sec" data-label="Riesgos">
+            <h2><b>4</b>Riesgos</h2>
+            <div class="skel"><i></i><i></i><i></i></div>
+            <div class="body"><ul>
+              <li>Titulares comparativos desfavorables en prensa económica durante las próximas 48 horas <button class="cite" data-c="2">2</button>.</li>
+              <li>Preguntas de analistas en la Junta del jueves sobre la velocidad de despliegue <button class="cite" data-c="3">3</button>.</li>
+            </ul></div>
+          </section>
+
+          <section class="sec" data-label="Mensajes clave">
+            <h2><b>5</b>Mensajes clave</h2>
+            <div class="skel"><i></i><i></i><i></i></div>
+            <div class="body"><ol>
+              <li><mark class="flag" data-t="t2">Tenemos, sin duda, la mejor red de fibra de Europa</mark> <button class="cite" data-c="3">3</button>.</li>
+              <li>Nuestro plan de despliegue 2026 avanza según lo previsto <button class="cite" data-c="4">4</button>.</li>
+              <li>La fibra es la base de nuestra oferta 5G y de servicios digitales <button class="cite" data-c="5">5</button>.</li>
+            </ol></div>
+          </section>
+
+          <section class="sec" data-label="Próximos pasos">
+            <h2><b>6</b>Próximos pasos</h2>
+            <div class="skel"><i></i><i></i><i></i></div>
+            <div class="body"><ul>
+              <li>Preparar el Q&A para portavoces antes del jueves.</li>
+              <li>Monitorizar la conversación cada 6 horas y actualizar este briefing.</li>
+            </ul></div>
+          </section>
+        </article>
+      </div>
+
+      <!-- ===== RIGHT ===== -->
+      <aside class="side">
+        <!-- Step 1: config -->
+        <section class="panel cfg" data-steps="1" aria-labelledby="cfg-title">
+          <div class="panel__head"><h2 id="cfg-title"><i data-lucide="sliders-horizontal"></i>Tu briefing</h2></div>
+          <div class="side__scroll">
+            <dl>
+              <div><dt>Para</dt><dd><i data-lucide="users"></i>Comité de Dirección</dd></div>
+              <div><dt>Extensión</dt><dd><i data-lucide="file"></i>1 página · lectura de 3 min</dd></div>
+              <div><dt>Tono</dt><dd><i data-lucide="book-open-check"></i>Ejecutivo · Guía de tono v3.2</dd></div>
+              <div><dt>Estructura</dt><dd style="display:block">
+                <ol class="outline"><li>Resumen ejecutivo</li><li>Qué ha pasado</li><li>Impacto para Telefónica</li><li>Riesgos</li><li>Mensajes clave</li><li>Próximos pasos</li></ol>
+              </dd></div>
+            </dl>
+          </div>
+          <div class="side__foot">
+            <button class="btn btn--primary" id="write" type="button"><i data-lucide="pen-line"></i><span id="write-label">Redactar con 6 fuentes</span></button>
+            <p class="side__note" id="src-note"><i data-lucide="shield-check"></i>Solo se usarán las fuentes marcadas. Cada dato llevará su cita.</p>
+          </div>
+        </section>
+
+        <!-- Step 2: progress -->
+        <section class="panel" data-steps="2" hidden aria-labelledby="prog-title" aria-live="polite">
+          <div class="panel__head"><h2 id="prog-title"><i data-lucide="loader-circle" class="spin"></i>Redactando tu briefing</h2></div>
+          <ol class="prog" id="prog">
+            <li><span class="dot"><i data-lucide="circle"></i></span><span>Leyendo <span id="prog-n">6</span> fuentes<small>Informes, listening y documentos internos</small></span></li>
+            <li><span class="dot"><i data-lucide="circle"></i></span><span>Contrastando datos<small>Cada cifra con al menos una fuente</small></span></li>
+            <li><span class="dot"><i data-lucide="circle"></i></span><span>Redactando secciones<small id="prog-sec">Resumen ejecutivo</small></span></li>
+            <li><span class="dot"><i data-lucide="circle"></i></span><span>Revisando tono de marca<small>Guía de tono v3.2</small></span></li>
+          </ol>
+          <div class="side__foot">
+            <button class="btn btn--ghost" type="button" data-go="1"><i data-lucide="arrow-left"></i>Cancelar y volver a fuentes</button>
+          </div>
+        </section>
+
+        <!-- Step 3: review -->
+        <section class="panel" data-steps="3" hidden aria-label="Revisión">
+          <div class="tabs" role="tablist">
+            <button class="tab" role="tab" id="tab-src" aria-selected="true" aria-controls="tp-src" type="button"><i data-lucide="library"></i>Fuentes <span class="count" id="cnt-src">5</span></button>
+            <button class="tab" role="tab" id="tab-tone" aria-selected="false" aria-controls="tp-tone" type="button"><i data-lucide="book-open-check"></i>Tono <span class="count is-warn" id="cnt-tone">2</span></button>
+          </div>
+          <div class="side__scroll">
+            <div role="tabpanel" id="tp-src" aria-labelledby="tab-src">
+              <p class="side__note" style="margin-bottom:12px"><i data-lucide="mouse-pointer-click"></i>Pulsa una cita del documento para ver de dónde sale el dato.</p>
+              <div class="scard" data-s="1"><div class="scard__head"><span class="scard__n">1</span><div><p class="scard__title">Resultados T3 2026 · Competidor X</p><p class="scard__meta">Informe externo · hoy, 07:40 · p. 4</p></div></div>
+                <blockquote>«Los ingresos de fibra crecen un 6 % interanual, con 1,2 millones de nuevos hogares conectados en el trimestre.»</blockquote></div>
+              <div class="scard" data-s="2"><div class="scard__head"><span class="scard__n">2</span><div><p class="scard__title">Menciones «redes de fibra» · 12 h</p><p class="scard__meta">Social listening · 214 artículos</p></div></div>
+                <blockquote>«+18 % de menciones frente a la media de 30 días. DE 34 %, UK 24 %, ES 14 %. Telefónica presente en el 31 %.»</blockquote></div>
+              <div class="scard" data-s="3"><div class="scard__head"><span class="scard__n">3</span><div><p class="scard__title">Resultados T2 2026 · Telefónica</p><p class="scard__meta">Informe interno · 28 jul · p. 12</p></div></div>
+                <blockquote>«Telefónica mantiene la mayor cobertura de fibra hasta el hogar en España.»</blockquote></div>
+              <div class="scard" data-s="4"><div class="scard__head"><span class="scard__n">4</span><div><p class="scard__title">Ejes estratégicos de comunicación 2026</p><p class="scard__meta">v2.0 · eje 2: «Red y despliegue»</p></div></div>
+                <blockquote>«El plan de despliegue 2026 cumple los hitos previstos para el segundo semestre.»</blockquote></div>
+              <div class="scard" data-s="5"><div class="scard__head"><span class="scard__n">5</span><div><p class="scard__title">Argumentario 5G y fibra para portavoces</p><p class="scard__meta">v7 · mensaje 3</p></div></div>
+                <blockquote>«La fibra es la base sobre la que construimos el 5G y nuestros servicios digitales.»</blockquote></div>
+            </div>
+            <div role="tabpanel" id="tp-tone" aria-labelledby="tab-tone" hidden>
+              <div class="tone-sum tone-sum--warn" id="tone-sum"><i data-lucide="triangle-alert"></i><span id="tone-sum-text">2 sugerencias de tono<small>Según la Guía de tono v3.2</small></span></div>
+              <div class="tsug" data-t="t1">
+                <p class="tsug__rule"><i data-lucide="book-open"></i>Guía v3.2 · §4 Evitar lenguaje bélico</p>
+                <p class="tsug__swap"><del>ataque comercial</del> → <ins>movimiento competitivo</ins></p>
+                <div class="tsug__act"><button class="btn btn--primary" type="button" data-apply="t1"><i data-lucide="check"></i>Aplicar</button><button class="btn btn--ghost" type="button" data-show="t1">Ver en el texto</button></div>
+                <p class="tsug__state"><i data-lucide="circle-check"></i>Aplicada</p>
+              </div>
+              <div class="tsug" data-t="t2">
+                <p class="tsug__rule"><i data-lucide="book-open"></i>Guía v3.2 · §2 Afirmaciones verificables, sin superlativos</p>
+                <p class="tsug__swap"><del>Tenemos, sin duda, la mejor red de fibra de Europa</del> → <ins>Lideramos la cobertura de fibra en España</ins></p>
+                <div class="tsug__act"><button class="btn btn--primary" type="button" data-apply="t2"><i data-lucide="check"></i>Aplicar</button><button class="btn btn--ghost" type="button" data-show="t2">Ver en el texto</button></div>
+                <p class="tsug__state"><i data-lucide="circle-check"></i>Aplicada</p>
+              </div>
+            </div>
+          </div>
+          <div class="side__foot">
+            <button class="btn btn--primary" type="button" data-go="4"><i data-lucide="arrow-right"></i>Continuar a exportar</button>
+            <p class="side__note" id="tone-note"><i data-lucide="info"></i>Pasa el ratón por un párrafo para acortarlo, hacerlo más formal o regenerarlo.</p>
+          </div>
+        </section>
+
+        <!-- Step 4: export -->
+        <section class="panel" data-steps="4" hidden id="export" aria-labelledby="exp-title">
+          <div class="panel__head"><h2 id="exp-title"><i data-lucide="send"></i>Exportar y compartir</h2></div>
+          <div class="side__scroll">
+            <div class="xrow is-on" id="x-file">
+              <label class="xrow__head"><input type="checkbox" checked data-x="file"><strong><i data-lucide="download"></i>Descargar</strong></label>
+              <div class="xrow__body">
+                <div class="seg" role="radiogroup" aria-label="Formato">
+                  <label><input type="radio" name="fmt" value="docx" checked><span><i data-lucide="file-text"></i>Word</span></label>
+                  <label><input type="radio" name="fmt" value="pdf"><span><i data-lucide="file"></i>PDF</span></label>
+                  <label><input type="radio" name="fmt" value="pptx"><span><i data-lucide="presentation"></i>PowerPoint</span></label>
+                </div>
+                <p class="xrow__hint">Con plantilla corporativa y fuentes al final.</p>
+              </div>
+            </div>
+            <div class="xrow is-on" id="x-send">
+              <label class="xrow__head"><input type="checkbox" checked data-x="send"><strong><i data-lucide="mail"></i>Enviar a Dirección</strong></label>
+              <div class="xrow__body">
+                <div class="seg" role="radiogroup" aria-label="Canal">
+                  <label><input type="radio" name="ch" value="mail" checked><span><i data-lucide="mail"></i>Email</span></label>
+                  <label><input type="radio" name="ch" value="teams"><span><i data-lucide="message-circle"></i>Teams</span></label>
+                </div>
+                <div class="recips" id="recips">
+                  <span class="recip">Comité de Dirección<button type="button" aria-label="Quitar Comité de Dirección"><i data-lucide="x"></i></button></span>
+                  <span class="recip">Dirección de Comunicación<button type="button" aria-label="Quitar Dirección de Comunicación"><i data-lucide="x"></i></button></span>
+                </div>
+                <div class="field"><label for="msg">Mensaje</label>
+                  <textarea id="msg">Os comparto el briefing sobre los resultados T3 de Competidor X y el aumento de la conversación sobre fibra. Incluye riesgos y mensajes clave para esta semana.</textarea></div>
+              </div>
+            </div>
+            <div class="xrow is-on" id="x-save">
+              <label class="xrow__head"><input type="checkbox" checked data-x="save"><strong><i data-lucide="badge-check"></i>Guardar como versión vigente</strong></label>
+              <div class="xrow__body">
+                <p class="xrow__hint">Será la única versión válida en el repositorio. Si hay versiones anteriores, quedan archivadas y la IA deja de usarlas.</p>
+              </div>
+            </div>
+          </div>
+          <div class="side__foot">
+            <button class="btn btn--primary" id="do-export" type="button"><i data-lucide="send"></i><span id="export-label">Exportar, enviar y guardar</span></button>
+            <p class="side__note" id="exp-note" hidden></p>
+          </div>
+        </section>
+
+        <!-- Done -->
+        <section class="panel done" id="done" hidden aria-live="polite">
+          <div class="done__icon"><i data-lucide="check"></i></div>
+          <h2>Briefing listo</h2>
+          <p class="panel__meta" style="margin:0">6 oct 2026 · 08:58</p>
+          <ul id="done-list"></ul>
+          <div class="side__foot">
+            <a class="btn btn--primary" href="index.html"><i data-lucide="house"></i>Volver al inicio</a>
+            <button class="btn btn--ghost" type="button" data-go="3" data-reedit><i data-lucide="pencil"></i>Seguir editando</button>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status"><i data-lucide="info" style="width:16px;height:16px"></i><span id="toast-text"></span><button type="button" id="toast-undo" hidden>Deshacer</button></div>
+
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script>
+  const draw = () => window.lucide && lucide.createIcons();
+  draw();
+  const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const T = ms => reduce ? 0 : ms;
+
+  const state = { step: 1, reached: 1, tone: { t1: false, t2: false }, exported: false };
+
+  /* ---------- Toast ---------- */
+  const toast = $('#toast'), toastText = $('#toast-text'), undoBtn = $('#toast-undo');
+  let toastT, undoFn = null;
+  function showToast(msg, undo) {
+    toastText.textContent = msg; undoFn = undo || null;
+    undoBtn.hidden = !undo; toast.classList.toggle('toast--act', !!undo);
+    toast.classList.add('is-on'); clearTimeout(toastT);
+    toastT = setTimeout(() => toast.classList.remove('is-on'), undo ? 5000 : 2400);
+  }
+  undoBtn.addEventListener('click', () => { undoFn && undoFn(); undoFn = null; toast.classList.remove('is-on'); });
+  $$('[data-soon]').forEach(el => el.addEventListener('click', e => { e.preventDefault(); showToast('Esta pantalla llegará en la siguiente fase del prototipo'); }));
+
+  /* ---------- Steps ---------- */
+  function go(n) {
+    if (n > state.reached) return;
+    state.step = n; document.body.dataset.step = n;
+    $$('[data-steps]').forEach(el => el.hidden = !el.dataset.steps.split(' ').includes(String(n)));
+    $('#done').hidden = true;
+    if (n === 4 && state.exported) { $('#export').hidden = true; $('#done').hidden = false; }
+    $$('.step').forEach(b => {
+      const k = +b.dataset.go;
+      b.removeAttribute('aria-current'); b.classList.remove('is-done'); b.disabled = k > state.reached || k === 2;
+      const num = b.querySelector('.step__n');
+      if (k === n) { b.setAttribute('aria-current', 'step'); num.innerHTML = (k === 4 && state.exported) ? '<i data-lucide="check"></i>' : k; }
+      else if (k < n || (k <= state.reached && k !== 2)) { b.classList.add('is-done'); num.innerHTML = '<i data-lucide="check"></i>'; }
+      else num.textContent = k;
+    });
+    draw();
+    window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+  }
+  $$('[data-go]').forEach(b => b.addEventListener('click', () => {
+    const n = +b.dataset.go;
+    if (n === 1) { clearTimeout(genT); state.reached = Math.max(state.reached, 1); }
+    if (n === 4) state.reached = Math.max(state.reached, 4);
+    if (b.hasAttribute('data-reedit')) state.exported = false;
+    go(n);
+  }));
+
+  /* ---------- Step 1: sources ---------- */
+  const boxes = $$('#srcs input');
+  function syncSources() {
+    boxes.forEach(b => b.closest('.src').classList.toggle('is-off', !b.checked));
+    const n = boxes.filter(b => b.checked).length;
+    const old = boxes.find(b => b.value === '7').checked;
+    $('#write').disabled = n === 0;
+    $('#write-label').textContent = n === 0 ? 'Redactar' : `Redactar con ${n} fuente${n > 1 ? 's' : ''}`;
+    const note = $('#src-note');
+    note.className = 'side__note';
+    if (n === 0) { note.classList.add('is-error'); note.innerHTML = '<i data-lucide="circle-alert"></i>Selecciona al menos una fuente para redactar.'; }
+    else if (old) { note.classList.add('is-warn'); note.innerHTML = '<i data-lucide="triangle-alert"></i>Has marcado una versión anterior de la Guía de tono. Puede contradecir a la v3.2.'; }
+    else note.innerHTML = '<i data-lucide="shield-check"></i>Solo se usarán las fuentes marcadas. Cada dato llevará su cita.';
+    draw();
+  }
+  boxes.forEach(b => b.addEventListener('change', syncSources));
+
+  /* ---------- Step 2: generation ---------- */
+  let genT;
+  const secs = $$('.sec');
+  const prog = $$('#prog li');
+  const setProg = (i, s) => { const li = prog[i]; li.className = s; li.querySelector('.dot').innerHTML = s === 'is-done' ? '<i data-lucide="circle-check"></i>' : s === 'is-active' ? '<i data-lucide="loader-circle" class="spin"></i>' : '<i data-lucide="circle"></i>'; };
+
+  $('#write').addEventListener('click', () => {
+    const on = boxes.filter(b => b.checked).map(b => b.value);
+    // Citations only for selected sources
+    $$('.cite').forEach(c => c.hidden = !on.includes(c.dataset.c));
+    $$('.scard').forEach(c => c.hidden = !on.includes(c.dataset.s));
+    $('#cnt-src').textContent = $$('.scard').filter(c => !c.hidden).length;
+    state.toneOn = on.includes('6');
+    $('#prog-n').textContent = on.length;
+    state.reached = 2; go(2);
+    secs.forEach(s => { s.classList.remove('is-in', 'is-writing', 'is-hidden'); s.classList.add('is-pending', 'is-hidden'); });
+    prog.forEach((_, i) => setProg(i, ''));
+    draw();
+    const seq = [];
+    seq.push(() => { setProg(0, 'is-active'); });
+    seq.push(() => { setProg(0, 'is-done'); setProg(1, 'is-active'); });
+    seq.push(() => { setProg(1, 'is-done'); setProg(2, 'is-active'); });
+    secs.forEach((s, i) => {
+      seq.push(() => { if (i) { secs[i-1].classList.remove('is-pending', 'is-writing'); secs[i-1].classList.add('is-in'); } s.classList.remove('is-hidden'); s.classList.add('is-writing'); $('#prog-sec').textContent = s.dataset.label; });
+    });
+    seq.push(() => { const l = secs[secs.length-1]; l.classList.remove('is-pending', 'is-writing'); l.classList.add('is-in'); setProg(2, 'is-done'); setProg(3, 'is-active'); $('#prog-sec').textContent = 'Todas las secciones'; });
+    seq.push(() => { setProg(3, 'is-done'); });
+    seq.push(() => { state.reached = 3; setupTone(); go(3); showToast('Borrador listo · revisa las fuentes y el tono'); });
+    let i = 0;
+    const tick = () => { seq[i++](); draw(); if (i < seq.length) genT = setTimeout(tick, T(i < 3 ? 500 : 420)); };
+    tick();
+  });
+
+  /* ---------- Step 3: review ---------- */
+  function selectTab(which) {
+    const src = which === 'src';
+    $('#tab-src').setAttribute('aria-selected', src); $('#tab-tone').setAttribute('aria-selected', !src);
+    $('#tp-src').hidden = !src; $('#tp-tone').hidden = src;
+  }
+  $('#tab-src').addEventListener('click', () => selectTab('src'));
+  $('#tab-tone').addEventListener('click', () => selectTab('tone'));
+
+  function highlightSource(n) {
+    $$('.cite').forEach(c => c.classList.toggle('is-hl', c.dataset.c === n));
+    $$('.scard').forEach(c => c.classList.toggle('is-hl', c.dataset.s === n));
+    selectTab('src');
+    const card = $(`.scard[data-s="${n}"]`); card && card.scrollIntoView({ block: 'nearest', behavior: reduce ? 'auto' : 'smooth' });
+  }
+  $('#doc').addEventListener('click', e => {
+    if (state.step !== 3) return;
+    const c = e.target.closest('.cite'); if (c) { highlightSource(c.dataset.c); return; }
+    const f = e.target.closest('.flag'); if (f) { showSuggestion(f.dataset.t); }
+  });
+
+  // Tone
+  const fixes = { t1: 'movimiento competitivo', t2: 'Lideramos la cobertura de fibra en España' };
+  function setupTone() {
+    const sum = $('#tone-sum'), cnt = $('#cnt-tone');
+    if (!state.toneOn) {
+      $$('.tsug').forEach(t => t.hidden = true);
+      sum.className = 'tone-sum tone-sum--warn';
+      $('#tone-sum-text').innerHTML = 'Tono sin comprobar<small>No marcaste la Guía de tono como fuente.</small>';
+      cnt.textContent = '!'; cnt.className = 'count is-warn';
+      $$('.flag').forEach(f => f.classList.add('is-muted'));
+      return;
+    }
+    $$('.tsug').forEach(t => t.hidden = false);
+    updateTone();
+  }
+  function updateTone() {
+    const left = Object.values(state.tone).filter(v => !v).length;
+    const sum = $('#tone-sum'), cnt = $('#cnt-tone');
+    cnt.textContent = left || '✓';
+    cnt.className = 'count ' + (left ? 'is-warn' : 'is-ok');
+    if (left) {
+      sum.className = 'tone-sum tone-sum--warn';
+      sum.querySelector('svg, i')?.remove(); sum.insertAdjacentHTML('afterbegin', '<i data-lucide="triangle-alert"></i>');
+      $('#tone-sum-text').innerHTML = `${left} sugerencia${left > 1 ? 's' : ''} de tono<small>Según la Guía de tono v3.2</small>`;
+    } else {
+      sum.className = 'tone-sum tone-sum--ok';
+      sum.querySelector('svg, i')?.remove(); sum.insertAdjacentHTML('afterbegin', '<i data-lucide="badge-check"></i>');
+      $('#tone-sum-text').innerHTML = 'Tono de marca verificado<small>Cumple la Guía de tono v3.2</small>';
+    }
+    draw();
+  }
+  function showSuggestion(t) {
+    selectTab('tone');
+    $$('.tsug').forEach(s => s.classList.toggle('is-hl', s.dataset.t === t));
+    $(`.tsug[data-t="${t}"]`)?.scrollIntoView({ block: 'nearest', behavior: reduce ? 'auto' : 'smooth' });
+  }
+  function applyFix(t) {
+    const mark = $(`.flag[data-t="${t}"]`); if (!mark) return;
+    const prev = mark.outerHTML;
+    const span = document.createElement('span'); span.className = 'fixed'; span.dataset.t = t; span.textContent = fixes[t];
+    mark.replaceWith(span); setTimeout(() => span.classList.add('is-settled'), 50);
+    state.tone[t] = true; $(`.tsug[data-t="${t}"]`).classList.add('is-done'); updateTone();
+    showToast('Sugerencia de tono aplicada', () => {
+      span.outerHTML = prev; state.tone[t] = false; $(`.tsug[data-t="${t}"]`).classList.remove('is-done'); updateTone();
+    });
+  }
+  $$('[data-apply]').forEach(b => b.addEventListener('click', () => applyFix(b.dataset.apply)));
+  $$('[data-show]').forEach(b => b.addEventListener('click', () => {
+    const m = $(`.flag[data-t="${b.dataset.show}"]`); if (!m) return;
+    m.scrollIntoView({ block: 'center', behavior: reduce ? 'auto' : 'smooth' });
+    m.animate([{ boxShadow: '0 0 0 4px rgba(0,102,255,.35)' }, { boxShadow: '0 0 0 0 rgba(0,102,255,0)' }], { duration: 1200 });
+  }));
+
+  // Paragraph quick edits
+  const C = n => `<button class="cite" data-c="${n}">${n}</button>`;
+  const variants = {
+    resumen: {
+      short: `Competidor X crece un 6 % en ingresos de fibra en el T3 ${C(1)} y las menciones sobre fibra en Europa suben un 18 % en 12 horas ${C(2)}. Aparecemos en el 31 % de la conversación, con tono neutro.`,
+      formal: `Competidor X ha comunicado hoy sus resultados correspondientes al tercer trimestre, que reflejan un incremento interanual del 6 % en los ingresos de fibra ${C(1)}. De forma simultánea, se ha registrado un aumento del 18 % en las menciones relativas a redes de fibra en medios europeos durante las últimas 12 horas ${C(2)}, en las que Telefónica está presente en el 31 % de los casos con un tono predominantemente neutro.`,
+      regen: `La conversación sobre fibra en Europa se ha activado esta mañana: las menciones crecen un 18 % en 12 horas ${C(2)} tras la publicación de los resultados del T3 de Competidor X, que mejora un 6 % sus ingresos de fibra ${C(1)}. Telefónica aparece en el 31 % de las menciones, sin un sesgo negativo relevante.`
+    },
+    impacto: {
+      short: `El anuncio refuerza a Competidor X en Alemania, donde competimos directamente ${C(2)}. Seguimos liderando la cobertura de fibra en España ${C(3)} y nuestro despliegue 2026 va según lo previsto ${C(4)}.`,
+      formal: `El anuncio podría interpretarse como un refuerzo de la posición de Competidor X en los mercados en los que concurrimos, con especial incidencia en Alemania ${C(2)}. No obstante, Telefónica mantiene el liderazgo en cobertura de fibra en España ${C(3)} y el plan de despliegue de 2026 cumple los hitos previstos ${C(4)}.`,
+      regen: `En Alemania, el anuncio puede desplazar parte de la atención mediática hacia Competidor X ${C(2)}. Nuestra respuesta debe apoyarse en datos: somos líderes en cobertura de fibra en España ${C(3)} y el despliegue de 2026 avanza conforme al plan ${C(4)}.`
+    }
+  };
+  const actLabel = { short: 'Párrafo acortado', formal: 'Párrafo más formal', regen: 'Párrafo regenerado' };
+  $$('.para .tool').forEach(b => b.addEventListener('click', e => {
+    e.stopPropagation();
+    const para = b.closest('.para'), text = para.querySelector('.body-text'), key = para.dataset.edit, act = b.dataset.act;
+    const prev = text.innerHTML;
+    para.classList.add('is-busy');
+    setTimeout(() => {
+      text.innerHTML = variants[key][act];
+      // keep citations consistent with selected sources
+      const on = boxes.filter(x => x.checked).map(x => x.value);
+      text.querySelectorAll('.cite').forEach(c => c.hidden = !on.includes(c.dataset.c));
+      if (key === 'impacto' && !state.tone.t1) { state.tone.t1 = true; $('.tsug[data-t="t1"]').classList.add('is-done'); updateTone(); }
+      para.classList.remove('is-busy'); para.classList.remove('is-new'); void para.offsetWidth; para.classList.add('is-new');
+      showToast(actLabel[act], () => { text.innerHTML = prev; para.classList.remove('is-new'); if (key === 'impacto' && text.querySelector('.flag')) { state.tone.t1 = false; $('.tsug[data-t="t1"]').classList.remove('is-done'); updateTone(); } });
+    }, T(600));
+  }));
+
+  /* ---------- Step 4: export ---------- */
+  function syncExport() {
+    const on = k => $(`[data-x="${k}"]`).checked;
+    ['file', 'send', 'save'].forEach(k => $(`#x-${k}`).classList.toggle('is-on', on(k)));
+    const parts = [on('file') && 'Exportar', on('send') && 'enviar', on('save') && 'guardar'].filter(Boolean);
+    const btn = $('#do-export'), note = $('#exp-note');
+    btn.disabled = !parts.length;
+    let label = parts.join(', ').replace(/, ([^,]*)$/, ' y $1');
+    $('#export-label').textContent = parts.length ? label.charAt(0).toUpperCase() + label.slice(1) : 'Elige al menos una opción';
+    const recips = $$('#recips .recip').length;
+    const left = Object.values(state.tone).filter(v => !v).length;
+    note.hidden = true; note.className = 'side__note';
+    if (on('send') && !recips) { btn.disabled = true; note.hidden = false; note.classList.add('is-error'); note.innerHTML = '<i data-lucide="circle-alert"></i>Añade al menos un destinatario para enviarlo.'; }
+    else if (state.toneOn && left) { note.hidden = false; note.classList.add('is-warn'); note.innerHTML = left > 1 ? `<i data-lucide="triangle-alert"></i>Quedan ${left} sugerencias de tono sin aplicar. <a href="#" id="back-tone" style="color:inherit;text-decoration:underline">Revisarlas</a>` : `<i data-lucide="triangle-alert"></i>Queda 1 sugerencia de tono sin aplicar. <a href="#" id="back-tone" style="color:inherit;text-decoration:underline">Revisarla</a>`; }
+    draw();
+    $('#back-tone')?.addEventListener('click', e => { e.preventDefault(); go(3); selectTab('tone'); });
+  }
+  $$('[data-x]').forEach(c => c.addEventListener('change', syncExport));
+  $$('#recips button').forEach(b => b.addEventListener('click', () => { b.closest('.recip').remove(); syncExport(); }));
+  $$('[data-go="4"]').forEach(b => b.addEventListener('click', syncExport));
+
+  $('#do-export').addEventListener('click', () => {
+    const on = k => $(`[data-x="${k}"]`).checked;
+    const fmt = $('input[name="fmt"]:checked').value, ch = $('input[name="ch"]:checked').value;
+    const ext = { docx: 'Word', pdf: 'PDF', pptx: 'PowerPoint' }[fmt];
+    const btn = $('#do-export'); btn.disabled = true;
+    toast.classList.remove('is-on'); undoFn = null;
+    btn.innerHTML = '<i data-lucide="loader-circle" class="spin"></i>Procesando…'; draw();
+    setTimeout(() => {
+      const items = [];
+      if (on('file')) items.push(['file-down', `Descargado en ${ext}`, `Briefing_CompetidorX_T3_v1.${fmt} · simulado`]);
+      if (on('send')) items.push([ch === 'mail' ? 'mail' : 'message-circle', `Enviado por ${ch === 'mail' ? 'email' : 'Teams'}`, $$('#recips .recip').map(r => r.textContent.trim()).join(' · ')]);
+      if (on('save')) items.push(['badge-check', 'Guardado como versión vigente v1', 'Única versión válida en el repositorio']);
+      $('#done-list').innerHTML = items.map(([i, t, s]) => `<li><i data-lucide="${i}"></i><span>${t}<small>${s}</small></span></li>`).join('');
+      if (on('save')) { $('#doc').classList.add('is-vigente'); $('#save').innerHTML = '<i data-lucide="badge-check"></i>Versión vigente v1'; }
+      state.exported = true;
+      btn.innerHTML = '<i data-lucide="send"></i><span id="export-label"></span>'; btn.disabled = false;
+      go(4);
+    }, T(1100));
+  });
+
+  go(1); syncSources();
+</script>
+</body>
+</html>

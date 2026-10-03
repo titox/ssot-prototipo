@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SSoT · AI Training Center — Javier Martín</title>
+<link rel="stylesheet" href="assets/ssot.css">
+<style>
+.chip-warn { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 var(--s-3); border-radius: var(--r-pill); background: var(--yellow-very-light); color: var(--yellow-very-dark); font-size: 13px; font-weight: 600; }
+.chip-warn svg { width: 15px; height: 15px; }
+.chip-ok { background: var(--turquoise-very-light); color: var(--turquoise-very-dark); }
+.btn:disabled { background: var(--grey-2); color: var(--grey-6); cursor: not-allowed; transform: none; }
+
+/* Pipeline */
+.pipe { display: flex; align-items: stretch; }
+.stage { flex: 1; display: flex; flex-direction: column; gap: var(--s-3); padding: var(--s-5); background: var(--grey-0); border: 1px solid var(--grey-2); border-radius: var(--r-card); box-shadow: var(--shadow-1); min-width: 0; transition: border-color .3s, box-shadow .3s; position: relative; }
+.stage__k { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--grey-6); display: flex; align-items: center; gap: 6px; }
+.stage__k svg { width: 15px; height: 15px; color: var(--blue); }
+.stage h2 { margin: 0; font-size: 18px; font-weight: 600; }
+.stage__n { font-size: 48px; font-weight: 600; letter-spacing: -.03em; line-height: 1; }
+.stage__n small { font-size: 15px; font-weight: 400; color: var(--grey-6); letter-spacing: 0; margin-left: 6px; }
+.stage__d { font-size: 13px; color: var(--grey-6); margin: 0; }
+.stage__f { margin-top: auto; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; min-height: 20px; }
+.stage__f svg { width: 15px; height: 15px; }
+.f-blue { color: var(--blue); } .f-warn { color: var(--yellow-very-dark); } .f-ok { color: var(--turquoise-very-dark); } .f-mute { color: var(--grey-6); font-weight: 500; }
+.stage.is-active { border-color: var(--blue); box-shadow: 0 0 0 4px var(--blue-tint); }
+.stage.is-done { border-color: var(--turquoise-very-dark); }
+
+.stage--agent { flex: 1.3; background: var(--grey-9); color: var(--grey-0); border-color: var(--grey-9); box-shadow: inset 4px 0 0 var(--blue), var(--shadow-2); }
+.stage--agent .stage__k { color: var(--grey-3); }
+.stage--agent .stage__n small, .stage--agent .stage__d { color: var(--grey-3); }
+.stage--agent.is-active { box-shadow: inset 4px 0 0 var(--blue), 0 0 0 4px rgba(0,102,255,.35); }
+.stage--agent .btn { align-self: flex-start; }
+.meter { height: 8px; border-radius: 4px; background: var(--grey-7); overflow: hidden; }
+.meter i { display: block; height: 100%; width: 0; background: var(--blue); border-radius: 4px; transition: width .5s var(--ease-out); }
+
+.conn { width: 44px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+.conn span { width: 100%; height: 2px; background: var(--grey-3); position: relative; overflow: hidden; }
+.conn.is-flow span { background: var(--blue-tint); }
+.conn.is-flow span::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, var(--blue), transparent); animation: flow .8s linear infinite; }
+.conn.is-done span { background: var(--blue); }
+@keyframes flow { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+
+/* Queue */
+.q { list-style: none; margin: 0; padding: 0; }
+.q li { display: grid; grid-template-columns: 132px 40px 1fr 150px 110px; gap: var(--s-3); align-items: center; min-height: 60px; border-top: 1px solid var(--grey-1); }
+.q .kind { font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--grey-6); }
+.q .ico { width: 36px; height: 36px; border-radius: var(--r-ctrl); background: var(--blue-tint); color: var(--blue); display: grid; place-items: center; }
+.q .ico svg { width: 18px; height: 18px; }
+.q p { margin: 0; font-weight: 500; }
+.q small { display: block; font-size: 12px; color: var(--grey-6); font-weight: 400; }
+.q .act { font-size: 14px; font-weight: 600; color: var(--blue); text-align: right; }
+.q .status { justify-self: start; }
+.q li.is-new { animation: rise .35s var(--ease-out) both; }
+.empty { padding: var(--s-6) 0 var(--s-2); text-align: center; color: var(--grey-6); font-size: 14px; }
+
+/* Done */
+.done { display: grid; grid-template-columns: auto 1fr minmax(0, 1.1fr); gap: var(--s-6); align-items: center; padding: var(--s-6); background: var(--grey-0); border: 1.5px solid var(--turquoise-very-dark); border-radius: var(--r-card); box-shadow: var(--shadow-2); margin-top: var(--s-6); animation: rise .4s var(--ease-out) both; }
+.done__icon { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; background: var(--turquoise-very-light); color: var(--turquoise-very-dark); }
+.done__icon svg { width: 28px; height: 28px; }
+.done h2 { margin: 0 0 4px; font-size: 22px; font-weight: 600; }
+.done p { margin: 0; color: var(--grey-7); font-size: 15px; }
+.done__ex { padding: var(--s-4); border-radius: var(--r-ctrl); background: var(--turquoise-very-light); }
+.done__ex .lbl { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--turquoise-very-dark); margin: 0 0 4px; }
+.done__ex p { color: var(--grey-9); }
+.done__links { display: flex; gap: var(--s-2); margin-top: var(--s-4); }
+
+.sec-head { display: flex; justify-content: space-between; align-items: baseline; margin: var(--s-8) 0 var(--s-3); }
+.sec-head h2 { margin: 0; font-size: 18px; font-weight: 600; display: flex; gap: var(--s-2); align-items: center; }
+.sec-head h2 svg { color: var(--blue); }
+
+@media (max-width: 1180px) { .pipe { flex-direction: column; } .conn { width: auto; height: 24px; } .conn span { width: 2px; height: 100%; } .q li { grid-template-columns: 1fr auto; } .q .kind, .q .ico { display: none; } .done { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body data-page="training">
+<div class="app">
+  <nav class="nav" id="nav" aria-label="Principal"></nav>
+
+  <main class="main" style="max-width:1440px">
+    <nav class="crumbs" aria-label="Ruta"><a href="javier.html">Inicio</a><i data-lucide="chevron-right"></i><span>AI Training Center</span></nav>
+    <div class="ph">
+      <div><span class="ph__kicker">Brand Room</span><h1>AI Training Center</h1><p>Así aprende el agente SSoT la marca Telefónica, y así llega a toda la organización.</p></div>
+      <div class="ph__actions">
+        <span class="chip-warn" id="chip"><i data-lucide="clock"></i><span id="chip-t">cambios sin entrenar</span></span>
+        <button class="btn btn--primary" type="button" id="train-top"><i data-lucide="brain-circuit"></i>Entrenar agente</button>
+      </div>
+    </div>
+
+    <!-- Pipeline -->
+    <section class="pipe" aria-label="Del conocimiento de marca a la organización" aria-live="polite">
+      <article class="stage" id="s1">
+        <span class="stage__k"><i data-lucide="library"></i>01 · Fuentes</span>
+        <h2>Knowledge Sources</h2>
+        <div class="stage__n num" id="s1n">312</div>
+        <p class="stage__d">42 plantillas · 18 guías · 252 ejemplos aprobados</p>
+        <span class="stage__f f-blue" id="s1f"></span>
+      </article>
+      <div class="conn" id="c1"><span></span></div>
+      <article class="stage" id="s2">
+        <span class="stage__k"><i data-lucide="message-square-quote"></i>02 · Tono y estilo</span>
+        <h2>Tone &amp; Style</h2>
+        <div class="stage__n num">64<small>reglas</small></div>
+        <p class="stage__d" id="s2d">Guía de tono v3.2 · 122 expresiones a evitar</p>
+        <span class="stage__f" id="s2f"></span>
+      </article>
+      <div class="conn" id="c2"><span></span></div>
+      <article class="stage stage--agent" id="s3">
+        <span class="stage__k"><i data-lucide="brain-circuit"></i>03 · Agente SSoT</span>
+        <h2 id="s3h">Versión de marca v14</h2>
+        <div class="stage__n num"><span id="s3n">96</span>%<small>alineación con la guía</small></div>
+        <p class="stage__d" id="s3d">Entrenado hace 2 días</p>
+        <div class="meter" id="meter" hidden><i></i></div>
+        <button class="btn btn--primary" type="button" id="train"><i data-lucide="brain-circuit"></i><span id="train-l">Entrenar v15</span></button>
+      </article>
+      <div class="conn" id="c3"><span></span></div>
+      <article class="stage" id="s4">
+        <span class="stage__k"><i data-lucide="building-2"></i>04 · Organización</span>
+        <h2>Brand Health</h2>
+        <div class="stage__n num">98<small>% on brand</small></div>
+        <p class="stage__d">1.240 usuarios · 2.140 documentos esta semana</p>
+        <span class="stage__f f-mute" id="s4f"><i data-lucide="circle-check"></i>Usando la v14</span>
+      </article>
+    </section>
+
+    <div id="done-slot"></div>
+
+    <!-- Queue -->
+    <div class="sec-head"><h2><i data-lucide="list-checks"></i>Training Queue</h2><span class="panel__meta" id="q-meta">Entra en la v15 al entrenar</span></div>
+    <section class="panel" aria-label="Training Queue">
+      <ul class="q" id="queue"></ul>
+    </section>
+
+    <div class="sec-head"><h2><i data-lucide="history"></i>Versiones anteriores</h2><a class="link" href="#" data-soon>Ver historial</a></div>
+    <section class="panel">
+      <ul class="q">
+        <li><span class="kind">v14 · en uso</span><span class="ico"><i data-lucide="brain-circuit"></i></span><p>4 oct · Guía de tono v3.2<small>Alineación 96 %</small></p><span class="status status--ok" id="v14s"><i data-lucide="check"></i>Activa</span><a class="act" href="#" data-soon>Comparar</a></li>
+        <li><span class="kind">v13</span><span class="ico"><i data-lucide="archive"></i></span><p>21 sep · Argumentario 5G v7 · Plantillas Q3<small>Alineación 93 %</small></p><span class="status" style="background:var(--grey-1);color:var(--grey-7)">Archivada</span><a class="act" href="#" data-soon="Restaurar una versión llegará en la siguiente fase">Restaurar</a></li>
+      </ul>
+    </section>
+  </main>
+</div>
+
+<script src="assets/javier.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script>
+  const qs = new URLSearchParams(location.search);
+  const items = [
+    qs.has('pub') && { kind: 'Plantilla', icon: 'layout-template', title: 'Resultados semestrales v2', sub: 'Publicada hoy por ti · sustituye a la v1', status: ['ok', 'badge-check', 'Publicada'], src: 1 },
+    qs.has('rule') && { kind: 'Regla de tono', icon: 'message-square-quote', title: 'Regla 3 · Notas de prensa institucionales', sub: 'Editada hoy · evitar adjetivos promocionales', status: ['info', 'pencil', 'Editada'], rule: 1 },
+    { kind: 'Guía', icon: 'book-open', title: 'Guía de sostenibilidad 2026', sub: 'Validada ayer · el agente aún no la usa', status: ['ok', 'check', 'Validada'], src: 1 },
+  ].filter(Boolean);
+  const n = items.length, newSrc = items.filter(i => i.src).length, hasRule = items.some(i => i.rule);
+  const $ = id => document.getElementById(id);
+  const stt = ([c, i, t]) => `<span class="status status--${c}"><i data-lucide="${i}"></i>${t}</span>`;
+
+  $('queue').innerHTML = items.map(it => `<li class="${it.rule || (it.src && it.kind === 'Plantilla') ? 'is-new' : ''}"><span class="kind">${it.kind}</span><span class="ico"><i data-lucide="${it.icon}"></i></span><p>${it.title}<small>${it.sub}</small></p>${stt(it.status)}<a class="act" href="#" data-soon>Ver cambio</a></li>`).join('');
+  $('chip-t').textContent = `${n} cambio${n > 1 ? 's' : ''} sin entrenar`;
+  $('s1f').innerHTML = newSrc ? `<i data-lucide="plus"></i>${newSrc} recurso${newSrc > 1 ? 's' : ''} nuevo${newSrc > 1 ? 's' : ''} sin entrenar` : '';
+  $('s2f').innerHTML = hasRule ? '<i data-lucide="pencil"></i>1 regla editada sin entrenar' : '<i data-lucide="circle-check"></i>Sin cambios';
+  $('s2f').className = 'stage__f ' + (hasRule ? 'f-warn' : 'f-mute');
+  $('s3d').textContent = `Entrenado hace 2 días · v15 lista con ${n} cambio${n > 1 ? 's' : ''}`;
+
+  const D = reduceMotion ? 0 : 900;
+  const wait = ms => new Promise(r => setTimeout(r, reduceMotion ? 0 : ms));
+  let running = false;
+
+  async function train() {
+    if (running) return; running = true;
+    ['train', 'train-top'].forEach(id => $(id).disabled = true);
+    $('train-l').textContent = 'Entrenando…';
+    $('chip').className = 'chip-warn'; $('chip').style.background = 'var(--blue-tint)'; $('chip').style.color = 'var(--blue)';
+    $('chip').innerHTML = '<i data-lucide="loader-circle" class="spin"></i><span>Entrenando v15</span>'; draw();
+
+    // 1 · Sources
+    $('s1').classList.add('is-active'); $('s1f').innerHTML = `<i data-lucide="loader-circle" class="spin"></i>Leyendo ${newSrc || 0} recurso${newSrc === 1 ? '' : 's'} nuevo${newSrc === 1 ? '' : 's'}…`; draw();
+    await wait(D);
+    $('s1').classList.replace('is-active', 'is-done'); $('s1f').className = 'stage__f f-ok'; $('s1f').innerHTML = '<i data-lucide="circle-check"></i>Fuentes al día';
+    $('s1n').textContent = 312 + newSrc;
+    $('c1').classList.add('is-flow'); draw();
+    // 2 · Tone
+    await wait(D / 2);
+    $('s2').classList.add('is-active'); $('s2f').className = 'stage__f f-blue'; $('s2f').innerHTML = '<i data-lucide="loader-circle" class="spin"></i>Aplicando 64 reglas'; draw();
+    await wait(D);
+    $('c1').classList.replace('is-flow', 'is-done');
+    $('s2').classList.replace('is-active', 'is-done'); if (hasRule) $('s2d').textContent = 'Guía de tono v3.3 · 124 expresiones a evitar'; $('s2f').className = 'stage__f f-ok'; $('s2f').innerHTML = `<i data-lucide="circle-check"></i>${hasRule ? 'Regla 3 aprendida' : 'Reglas al día'}`;
+    $('c2').classList.add('is-flow'); draw();
+    // 3 · Agent
+    await wait(D / 2);
+    $('s3').classList.add('is-active'); $('meter').hidden = false; $('s3h').textContent = 'Entrenando v15';
+    for (let i = 1; i <= n; i++) {
+      $('s3d').textContent = `Aprendiendo ${i} de ${n}: ${items[i - 1].title}`;
+      $('meter').firstElementChild.style.width = (i / n * 100) + '%';
+      await wait(D);
+    }
+    $('c2').classList.replace('is-flow', 'is-done');
+    $('s3').classList.remove('is-active'); $('meter').hidden = true;
+    $('s3h').textContent = 'Versión de marca v15'; $('s3n').textContent = '98'; $('s3d').textContent = 'Entrenado ahora · alineación 96 % → 98 %';
+    $('train-l').textContent = 'v15 activa'; $('c3').classList.add('is-flow'); draw();
+    // 4 · Organisation
+    await wait(D / 2);
+    $('s4').classList.add('is-active'); $('s4f').className = 'stage__f f-blue'; $('s4f').innerHTML = '<i data-lucide="loader-circle" class="spin"></i>Propagando a 1.240 usuarios…'; draw();
+    await wait(D * 1.3);
+    $('c3').classList.replace('is-flow', 'is-done');
+    $('s4').classList.replace('is-active', 'is-done'); $('s4f').className = 'stage__f f-ok'; $('s4f').innerHTML = '<i data-lucide="circle-check"></i>Toda la organización usa la v15';
+
+    // Queue + header
+    document.querySelectorAll('#queue li').forEach(li => { li.querySelector('.status').outerHTML = stt(['ok', 'circle-check', 'Entrenado']); li.querySelector('.act').textContent = 'Ver'; });
+    $('q-meta').textContent = 'Incluido en la v15';
+    $('chip').className = 'chip-warn chip-ok'; $('chip').removeAttribute('style'); $('chip').innerHTML = '<i data-lucide="badge-check"></i><span>Agente al día · v15</span>';
+    $('train-top').innerHTML = '<i data-lucide="check"></i>Sin cambios pendientes';
+    $('v14s').outerHTML = '<span class="status" style="background:var(--grey-1);color:var(--grey-7)">Sustituida por v15</span>';
+
+    $('done-slot').innerHTML = `<section class="done" aria-live="polite">
+      <span class="done__icon"><i data-lucide="check"></i></span>
+      <div><h2>La v15 ya está activa</h2><p>En pocos minutos, toda la organización genera documentos alineados con la nueva guía.</p>
+        <div class="done__links"><a class="btn btn--primary" href="javier.html"><i data-lucide="house"></i>Volver al Brand Room</a><a class="btn btn--ghost" href="index.html"><i data-lucide="repeat"></i>Ver como María</a></div></div>
+      <div class="done__ex">${hasRule
+        ? '<p class="lbl">Así escribe ahora el agente una nota de prensa</p><p>Telefónica lanza la fibra de 10 Gb, disponible desde hoy en 12 ciudades españolas.</p>'
+        : '<p class="lbl">Lo nuevo que sabe el agente</p><p>' + items.map(i => i.title).join(' · ') + '</p>'}</div>
+    </section>`;
+    draw(); showToast('Agente entrenado · v15 activa');
+  }
+  $('train').addEventListener('click', train);
+  $('train-top').addEventListener('click', train);
+</script>
+</body>
+</html>

@@ -1,0 +1,497 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SSoT · Trust Center — Carlos Ruiz</title>
+<link rel="stylesheet" href="assets/ssot.css">
+<style>
+.greet__right { display: flex; align-items: center; gap: var(--s-4); }
+.greet__right .btn { height: 40px; font-size: 14px; padding: 0 var(--s-4); }
+.hq { font-size: 40px; line-height: 1.1; font-weight: 500; letter-spacing: -.02em; margin: 0 0 var(--s-6); }
+.hq span { color: var(--blue); }
+
+/* Briefing — signature: oversized figure */
+.brief { display: grid; grid-template-columns: 340px 1fr; gap: var(--s-10); padding: var(--s-8); border-radius: var(--r-card); background: var(--grey-9); color: var(--grey-0); position: relative; overflow: hidden; animation: rise .4s var(--ease-out) both; }
+.brief::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 4px; background: #F3E996; }
+.brief__fig { padding-right: var(--s-8); border-right: 1px solid var(--grey-7); display: flex; flex-direction: column; gap: var(--s-2); }
+.brief__tag { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: #F3E996; }
+.brief__tag svg { width: 16px; height: 16px; }
+.brief__num { font-size: 112px; line-height: 1; font-weight: 600; letter-spacing: -.04em; margin: var(--s-2) 0 0; }
+.brief__num small { font-size: 64px; letter-spacing: -.02em; }
+.brief__txt { margin: 0; font-size: 15px; line-height: 1.5; color: var(--grey-2); }
+.brief__txt strong { color: var(--grey-0); font-weight: 600; }
+.brief__seq-title { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--grey-3); margin: 0 0 var(--s-2); display: flex; align-items: center; gap: 6px; }
+.brief__seq-title svg { width: 16px; height: 16px; color: var(--blue); }
+.seq { list-style: none; margin: 0; padding: 0; }
+.seq li { display: grid; grid-template-columns: 24px 1fr auto; gap: var(--s-3); align-items: baseline; padding: var(--s-3) 0; border-bottom: 1px solid var(--grey-8); font-size: 15px; }
+.seq li svg { width: 18px; height: 18px; color: var(--turquoise-very-light); align-self: center; }
+.seq li strong { font-weight: 600; }
+.seq li span:last-child { font-size: 13px; color: var(--grey-3); text-align: right; }
+.anim .seq li { animation: rise .35s var(--ease-out) both; animation-delay: var(--d); }
+.brief__act { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2); margin-top: var(--s-5); }
+.brief .btn--ghost { color: var(--grey-1); border-color: var(--grey-7); }
+.brief .btn--ghost:hover { background: var(--grey-8); border-color: var(--grey-5); }
+.confirm { margin-top: var(--s-5); padding: var(--s-4) var(--s-5); border-radius: var(--r-ctrl); background: var(--grey-8); display: grid; gap: var(--s-3); animation: rise .25s var(--ease-out) both; }
+.confirm p { margin: 0; font-size: 14px; color: var(--grey-1); display: flex; gap: var(--s-2); align-items: flex-start; }
+.confirm p svg { width: 18px; height: 18px; color: var(--blue); flex-shrink: 0; margin-top: 1px; }
+.confirm .opts { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+.opt { display: inline-flex; align-items: center; gap: var(--s-2); height: 40px; padding: 0 var(--s-4); border-radius: var(--r-pill); border: 1px solid var(--grey-6); font-size: 14px; font-weight: 500; color: var(--grey-1); cursor: pointer; }
+.opt input { accent-color: var(--blue); width: 16px; height: 16px; margin: 0; }
+.opt:has(input:checked) { border-color: var(--blue); background: rgba(0, 102, 255, .18); color: var(--grey-0); }
+.brief::before { transition: background .5s var(--ease-out); }
+.brief__tag { transition: color .5s var(--ease-out); }
+.brief.is-calm::before, .brief.is-counting::before { background: var(--turquoise-very-light); }
+.brief.is-counting .brief__tag { color: var(--turquoise-very-light); }
+/* Countdown 42 → 0 */
+.brief__fig { position: relative; }
+.brief__num .sign, .brief__num small { display: inline-block; transition: opacity .35s var(--ease-out), transform .35s var(--ease-out); }
+.brief.is-counting .brief__num .sign, .brief.is-counting .brief__num small { opacity: 0; transform: translateY(-12px); }
+.brief__num .sign { overflow: hidden; vertical-align: top; max-width: .62em; transition: opacity .3s var(--ease-out), max-width .45s var(--ease-out); }
+.brief.is-counting .brief__num .sign { max-width: 0; transform: none; }
+.brief.is-counting .brief__txt { opacity: .35; transition: opacity .3s; }
+.brief__side { transition: opacity .3s var(--ease-out), transform .3s var(--ease-out); }
+.brief.is-counting .brief__side { opacity: 0; transform: translateY(8px); }
+.brief__num.land { animation: land .55s cubic-bezier(.2, .9, .3, 1.35) both; transform-origin: left center; }
+@keyframes land { 0% { transform: scale(1.35); color: var(--turquoise-very-light); } 100% { transform: none; } }
+.ripple { position: absolute; left: 4px; top: 40px; width: 120px; height: 120px; border-radius: 50%; border: 2px solid var(--turquoise-very-light); pointer-events: none; opacity: 0; animation: ripple 1.1s var(--ease-out) forwards; }
+.ripple.r2 { animation-delay: .18s; }
+@keyframes ripple { 0% { opacity: .7; transform: scale(.4); } 100% { opacity: 0; transform: scale(2.6); } }
+.brief.sweep::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(100deg, transparent 35%, rgba(235, 255, 255, .14) 50%, transparent 65%); transform: translateX(-100%); animation: sweep 1s var(--ease-out) forwards; }
+@keyframes sweep { to { transform: translateX(100%); } }
+.brief.anim-in .brief__side .seq li, .brief.anim-in .brief__side .brief__act, .brief.anim-in .brief__side .logline { animation: rise .4s var(--ease-out) both; }
+.brief.anim-in .brief__side .seq li:nth-child(1) { animation-delay: .1s; }
+.brief.anim-in .brief__side .seq li:nth-child(2) { animation-delay: .18s; }
+.brief.anim-in .brief__side .brief__act { animation-delay: .26s; }
+.brief.anim-in .brief__side .logline { animation-delay: .34s; }
+.brief.anim-in .brief__txt { animation: fadein .4s ease-out both; }
+@keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+.brief.is-calm .brief__tag { color: var(--turquoise-very-light); }
+.logline { margin-top: var(--s-4); padding: var(--s-3) var(--s-4); border-radius: var(--r-ctrl); background: var(--grey-8); font-size: 13px; color: var(--grey-2); display: flex; gap: var(--s-2); align-items: center; }
+.logline svg { width: 16px; height: 16px; color: var(--turquoise-very-light); }
+.logline button { margin-left: auto; background: none; border: 0; color: var(--grey-0); font-weight: 600; font-size: 13px; text-decoration: underline; text-underline-offset: 2px; padding: 4px; }
+
+.row { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: var(--s-5); margin-top: var(--s-6); }
+
+/* Governance health */
+.gh { list-style: none; margin: 0; padding: 0; }
+.gh a { display: grid; grid-template-columns: 32px 1fr 120px 150px 20px; gap: var(--s-3); align-items: center; min-height: 60px; padding: 0 var(--s-2); border-top: 1px solid var(--grey-1); border-radius: var(--r-ctrl); transition: background .15s var(--ease-out); }
+.gh li:first-child a { border-top: 0; }
+.gh a:hover { background: var(--grey-1); }
+.gh .ico { width: 32px; height: 32px; border-radius: var(--r-ctrl); background: var(--blue-tint); color: var(--blue); display: grid; place-items: center; }
+.gh .ico svg { width: 18px; height: 18px; }
+.gh .n { font-weight: 500; }
+.gh b { font-size: 30px; font-weight: 600; letter-spacing: -.02em; text-align: right; line-height: 1; }
+.gh .d { font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: flex-end; gap: 4px; text-align: right; }
+.gh .d svg { width: 15px; height: 15px; }
+.gh .d span { font-weight: 400; color: var(--grey-6); }
+.gh .chev { width: 18px; height: 18px; color: var(--grey-4); }
+.gh .is-warn .ico { background: var(--yellow-very-light); color: var(--yellow-very-dark); }
+.flat { color: var(--grey-7); }
+.warn { color: var(--yellow-very-dark); }
+
+/* Audit explorer */
+.ax p.lead { margin: 0 0 var(--s-4); font-size: 14px; color: var(--grey-6); line-height: 1.5; }
+.ax form { display: flex; gap: var(--s-2); padding: 6px 6px 6px var(--s-4); border: 1.5px solid var(--grey-3); border-radius: var(--r-card); align-items: center; transition: border-color .15s, box-shadow .15s; }
+.ax form:focus-within { border-color: var(--blue); box-shadow: 0 0 0 4px var(--blue-tint); }
+.ax form > svg { color: var(--grey-5); }
+.ax input { flex: 1; border: 0; outline: 0; font-size: 16px; height: 44px; background: transparent; min-width: 0; }
+.ax input::placeholder { color: var(--grey-5); }
+.ax .hint { font-size: 13px; color: var(--grey-6); margin: var(--s-2) 0 0; display: flex; gap: 6px; align-items: center; }
+.ax .hint svg { width: 15px; height: 15px; }
+.ax .hint.is-error { color: var(--coral-dark); font-weight: 500; }
+.recent { list-style: none; margin: var(--s-5) 0 0; padding: 0; }
+.recent .lbl { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--grey-6); margin-bottom: 4px; }
+.recent a { display: grid; grid-template-columns: 20px 1fr auto; gap: var(--s-3); align-items: center; min-height: 48px; padding: 0 var(--s-2); border-top: 1px solid var(--grey-1); border-radius: var(--r-ctrl); font-weight: 500; font-size: 14px; }
+.recent a:hover { background: var(--grey-1); }
+.recent a svg { width: 18px; height: 18px; color: var(--blue); }
+.recent a small { font-size: 12px; color: var(--grey-6); font-weight: 400; }
+
+/* Security & access */
+.seg { display: inline-flex; gap: 2px; padding: 3px; background: var(--grey-1); border-radius: var(--r-ctrl); }
+.seg button { height: 36px; padding: 0 var(--s-3); border: 0; border-radius: 6px; background: transparent; font-size: 13px; font-weight: 500; color: var(--grey-7); display: inline-flex; align-items: center; gap: 6px; }
+.seg button svg { width: 15px; height: 15px; }
+.seg button[aria-selected="true"] { background: var(--grey-0); color: var(--grey-9); font-weight: 600; box-shadow: var(--shadow-1); }
+.seg button[aria-selected="true"] svg { color: var(--blue); }
+.acc__meta { font-size: 13px; color: var(--grey-6); margin: 0 0 var(--s-3); }
+.bars { display: grid; gap: 2px; }
+.bars__head, .bar { display: grid; grid-template-columns: 150px 1fr 72px 120px; gap: var(--s-3); align-items: center; }
+.bars__head { font-size: 12px; font-weight: 600; color: var(--grey-6); padding: 0 6px 6px; }
+.bars__head span:nth-child(3), .bars__head span:nth-child(4), .bar .v, .bar .q { text-align: right; }
+.bar { min-height: 40px; padding: 0 6px; border-radius: 6px; font-size: 14px; }
+.bar:hover { background: var(--grey-1); }
+.bar .track { height: 12px; }
+.bar .track i { display: block; height: 100%; background: var(--blue); border-radius: 0 4px 4px 0; transform-origin: left center; animation: growx .6s var(--ease-out) both; animation-delay: var(--d); }
+.bar .v { font-weight: 600; }
+.bar .q { font-size: 13px; color: var(--grey-6); display: flex; justify-content: flex-end; gap: 4px; align-items: center; }
+.bar .q svg { width: 14px; height: 14px; }
+.bar.is-flag { background: var(--yellow-very-light); }
+.bar.is-flag .n, .bar.is-flag .q, .bar.is-flag .v { color: var(--yellow-very-dark); font-weight: 600; }
+.bar.is-flag .track i { background: #A7863E; }
+.bar .n { display: flex; gap: 6px; align-items: center; }
+.bar .n svg { width: 15px; height: 15px; }
+@keyframes growx { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+/* Recommendations */
+.ins { display: grid; gap: var(--s-4); }
+.in { padding-left: var(--s-4); border-left: 3px solid var(--blue); }
+.in.warn-l { border-left-color: #A7863E; }
+.in p { margin: 0 0 var(--s-2); font-size: 14px; line-height: 1.5; color: var(--grey-8); }
+.in p strong { font-weight: 600; color: var(--grey-9); }
+.in .btn { height: 36px; font-size: 13px; padding: 0 var(--s-3); }
+.btn--soft { background: var(--grey-0); color: var(--blue); border: 1px solid var(--grey-2); }
+.btn--soft:hover { border-color: var(--blue); background: var(--blue-tint); color: var(--blue); }
+.perm { margin: var(--s-3) 0 0; padding: var(--s-4); border-radius: var(--r-ctrl); background: var(--grey-1); animation: rise .25s var(--ease-out) both; }
+.perm h3 { margin: 0 0 var(--s-2); font-size: 13px; font-weight: 600; color: var(--grey-7); }
+.perm ul { list-style: none; margin: 0 0 var(--s-3); padding: 0; }
+.perm li { display: grid; grid-template-columns: 1fr auto; gap: var(--s-2); align-items: center; min-height: 48px; border-top: 1px solid var(--grey-2); font-size: 14px; }
+.perm li:first-child { border-top: 0; }
+.perm li small { display: block; font-size: 12px; color: var(--grey-6); }
+.perm .chg { font-size: 12px; font-weight: 600; display: inline-flex; gap: 4px; align-items: center; }
+.perm .chg s { color: var(--coral-dark); text-decoration-thickness: 1.5px; }
+.perm .chg svg { width: 13px; height: 13px; color: var(--grey-5); }
+.perm .to { display: block; font-size: 13px; color: var(--grey-7); margin-bottom: var(--s-3); }
+.perm .to strong { color: var(--grey-9); font-weight: 600; }
+.perm .act { display: flex; gap: var(--s-2); flex-wrap: wrap; }
+.sent { display: flex; gap: var(--s-2); align-items: flex-start; padding: var(--s-3) var(--s-4); border-radius: var(--r-ctrl); background: var(--turquoise-very-light); color: var(--turquoise-very-dark); font-size: 13px; font-weight: 500; animation: rise .25s var(--ease-out) both; }
+.sent svg { width: 16px; height: 16px; flex-shrink: 0; margin-top: 2px; }
+.sent strong { font-weight: 600; }
+.in.is-done > p { color: var(--grey-6); }
+
+@media (max-width: 1180px) {
+  .brief { grid-template-columns: 1fr; gap: var(--s-6); }
+  .brief__fig { border-right: 0; padding-right: 0; }
+  .row { grid-template-columns: 1fr; }
+  .gh a { grid-template-columns: 32px 1fr 90px 20px; } .gh .d { display: none; }
+  .bars__head, .bar { grid-template-columns: 110px 1fr 64px; } .bars__head span:nth-child(4), .bar .q { display: none; }
+}
+</style>
+</head>
+<body data-page="trust">
+<div class="app">
+  <nav class="nav" id="nav" aria-label="Principal"></nav>
+
+  <main class="main">
+    <div class="greet">
+      <p><strong>Buenos días, Carlos.</strong> Esto es lo que ha pasado en la plataforma durante la noche.</p>
+      <div class="greet__right">
+        <span class="greet__time num"><i data-lucide="clock-3" style="width:16px;height:16px"></i>Martes, 6 de octubre · 08:00</span>
+        <a class="btn btn--ghost" href="carlos-informe.html"><i data-lucide="file-text"></i>Generar informe semanal</a>
+      </div>
+    </div>
+    <h1 class="hq">¿Está la plataforma funcionando de forma <span>segura y conforme</span> a las políticas?</h1>
+
+    <!-- Briefing -->
+    <section class="brief anim" id="brief" aria-labelledby="brief-tag"></section>
+
+    <div class="row">
+      <!-- Governance health -->
+      <section class="panel" aria-labelledby="gh-title">
+        <div class="panel__head"><h2 id="gh-title"><i data-lucide="activity"></i>Salud de la gobernanza</h2><span class="panel__meta">Comparado con la semana pasada</span></div>
+        <ul class="gh">
+          <li><a href="#" data-soon="Cumplimiento: llegará en la siguiente fase del prototipo"><span class="ico"><i data-lucide="clipboard-check"></i></span><span class="n">Cumplimiento de políticas</span><b class="num">98 %</b><span class="d up"><i data-lucide="arrow-up"></i>1 pt <span>semana</span></span><i class="chev" data-lucide="chevron-right"></i></a></li>
+          <li><a href="#" data-soon="Calidad del conocimiento: la gestiona Laura en Knowledge Health"><span class="ico"><i data-lucide="gauge"></i></span><span class="n">Calidad del conocimiento</span><b class="num">96 %</b><span class="d flat"><i data-lucide="equal"></i>Sin cambios</span><i class="chev" data-lucide="chevron-right"></i></a></li>
+          <li id="gh-sec" class="is-warn"><a href="carlos-secuencia.html"><span class="ico"><i data-lucide="shield-alert"></i></span><span class="n">Seguridad · alertas abiertas</span><b class="num" id="gh-sec-n">2</b><span class="d warn" id="gh-sec-d"><i data-lucide="arrow-up"></i>1 <span>desde ayer</span></span><i class="chev" data-lucide="chevron-right"></i></a></li>
+          <li><a href="carlos-audit.html?q=Resultados%20Q2"><span class="ico"><i data-lucide="history"></i></span><span class="n">Trazabilidad de documentos</span><b class="num">100 %</b><span class="d flat"><i data-lucide="equal"></i>Sin cambios</span><i class="chev" data-lucide="chevron-right"></i></a></li>
+          <li><a href="#" data-soon="Detalle de SLA: llegará en la siguiente fase del prototipo"><span class="ico"><i data-lucide="timer"></i></span><span class="n">Cumplimiento SLA</span><b class="num">99,9 %</b><span class="d up"><i data-lucide="arrow-up"></i>0,1 pt <span>30 días</span></span><i class="chev" data-lucide="chevron-right"></i></a></li>
+        </ul>
+      </section>
+
+      <!-- Audit explorer -->
+      <section class="panel ax" aria-labelledby="ax-title">
+        <div class="panel__head"><h2 id="ax-title"><i data-lucide="file-search"></i>Audit Explorer</h2></div>
+        <p class="lead">Reconstruye la historia de cualquier documento, persona o acción: quién lo creó, quién lo consultó y con qué permisos.</p>
+        <form id="ax-form" action="carlos-audit.html" novalidate>
+          <i data-lucide="search"></i>
+          <label for="ax-q" class="visually-hidden">Buscar en el Audit Trail</label>
+          <input id="ax-q" name="q" type="search" placeholder="Documento, persona o acción…" autocomplete="off">
+          <button class="btn btn--primary" type="submit">Buscar</button>
+        </form>
+        <p class="hint" id="ax-hint"><i data-lucide="lightbulb"></i>Prueba con «Resultados Q2»</p>
+        <ul class="recent">
+          <li class="lbl">Últimas búsquedas</li>
+          <li><a href="carlos-audit.html?q=Resultados%20Q2"><i data-lucide="file-lock-2"></i>Resultados Q2 2026 · Grupo<small>ayer</small></a></li>
+          <li><a href="carlos-audit.html?q=Plan%20Estrat%C3%A9gico%202027"><i data-lucide="file-lock-2"></i>Plan Estratégico 2027 · Gabinete<small>lunes</small></a></li>
+        </ul>
+      </section>
+    </div>
+
+    <div class="row">
+      <!-- Security & access -->
+      <section class="panel" aria-labelledby="acc-title">
+        <div class="panel__head">
+          <h2 id="acc-title"><i data-lucide="key-round"></i>Seguridad y accesos</h2>
+          <div class="seg" role="tablist" aria-label="Agrupar accesos por" id="seg">
+            <button role="tab" type="button" data-v="nivel" aria-selected="true"><i data-lucide="lock"></i>Confidencialidad</button>
+            <button role="tab" type="button" data-v="area" aria-selected="false" tabindex="-1"><i data-lucide="building-2"></i>Área</button>
+            <button role="tab" type="button" data-v="hora" aria-selected="false" tabindex="-1"><i data-lucide="clock-3"></i>Horario</button>
+          </div>
+        </div>
+        <p class="acc__meta" id="acc-meta"></p>
+        <div class="bars" id="bars" role="tabpanel" aria-labelledby="acc-title"></div>
+      </section>
+
+      <!-- AI recommendations -->
+      <section class="panel" aria-labelledby="ins-title">
+        <div class="panel__head"><h2 id="ins-title"><i data-lucide="sparkles"></i>Recomendaciones de la IA</h2></div>
+        <div class="ins">
+          <div class="in warn-l" id="rec-perm">
+            <p><strong>3 usuarios de Comunicación</strong> mantienen permisos de edición sobre documentación de Gabinete tras el cambio organizativo del 1 de octubre.</p>
+            <button class="btn btn--soft" type="button" id="perm-btn" aria-expanded="false" aria-controls="perm"><i data-lucide="user-cog"></i>Solicitar revisión de permisos</button>
+            <div class="perm" id="perm" hidden>
+              <h3>Cambio propuesto</h3>
+              <ul>
+                <li><span>Ana Martín<small>Comunicación · antes Gabinete</small></span><span class="chg"><s>Edición</s><i data-lucide="arrow-right"></i>Lectura</span></li>
+                <li><span>Javier Romero<small>Comunicación · antes Gabinete</small></span><span class="chg"><s>Edición</s><i data-lucide="arrow-right"></i>Lectura</span></li>
+                <li><span>Irene Cabrera<small>Comunicación · antes Gabinete</small></span><span class="chg"><s>Edición</s><i data-lucide="arrow-right"></i>Sin acceso</span></li>
+              </ul>
+              <span class="to">Se enviará a <strong>Administración de la plataforma</strong> y quedará registrado como incidencia.</span>
+              <div class="act">
+                <button class="btn btn--primary" type="button" id="perm-send"><i data-lucide="send"></i>Enviar solicitud</button>
+                <button class="btn btn--ghost" type="button" id="perm-cancel">Cancelar</button>
+              </div>
+            </div>
+          </div>
+          <div class="in">
+            <p><strong>5 documentos</strong> tienen permisos superiores a los recomendados para su nivel de confidencialidad.</p>
+            <button class="btn btn--soft" type="button" data-soon="Accesos y permisos: llegará en la siguiente fase del prototipo"><i data-lucide="file-lock-2"></i>Ver documentos</button>
+          </div>
+          <div class="in">
+            <p><strong>Marketing y Finanzas</strong> están usando versiones distintas del informe «Resultados Q2».</p>
+            <a class="btn btn--soft" href="carlos-audit.html?q=Resultados%20Q2"><i data-lucide="git-compare"></i>Ver la historia del informe</a>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<script src="assets/carlos.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  const fmt = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  const params = new URLSearchParams(location.search);
+
+  /* ---------- Briefing ---------- */
+  const brief = $('brief');
+  const OPEN = `
+    <div class="brief__fig">
+      <span class="brief__tag" id="brief-tag"><i data-lucide="triangle-alert"></i>Anomalía · esta noche, 02:10–04:35</span>
+      <p class="brief__num num" id="bnum"><span class="sign">+</span><span id="bval">42</span><small> %</small></p>
+      <p class="brief__txt">accesos a documentos <strong>Confidencial</strong> respecto a la media de las últimas 4 semanas</p>
+    </div>
+    <div class="brief__side">
+      <p class="brief__seq-title"><i data-lucide="sparkles"></i>La IA ha reconstruido la secuencia</p>
+      <ul class="seq">
+        <li style="--d:150ms"><i data-lucide="file-lock-2"></i><span><strong>112 documentos</strong> consultados, 94 de Finanzas</span><span>Resultados Q2, Previsión 2027</span></li>
+        <li style="--d:250ms"><i data-lucide="users"></i><span><strong>18 usuarios</strong> de Finanzas, Gabinete y Auditoría interna</span><span>Cierre trimestral</span></li>
+        <li style="--d:350ms"><i data-lucide="shield-check"></i><span>Todos los accesos estaban <strong>autorizados</strong> en ese momento</span><span>18 de 18</span></li>
+        <li style="--d:450ms"><i data-lucide="bot"></i><span>La IA usó <strong>6 de estos documentos</strong> en 3 informes generados</span><span>Todos con fuentes</span></li>
+      </ul>
+      <div class="brief__act" id="brief-act">
+        <button class="btn btn--primary" type="button" id="close-btn"><i data-lucide="check"></i>Cerrar como revisada</button>
+        <a class="btn btn--ghost" href="carlos-secuencia.html"><i data-lucide="list-tree"></i>Ver secuencia completa</a>
+      </div>
+      <div id="confirm-slot"></div>
+    </div>`;
+  const CALM = (time, reason) => `
+    <div class="brief__fig">
+      <span class="brief__tag" id="brief-tag"><i data-lucide="shield-check"></i>Sin anomalías abiertas</span>
+      <p class="brief__num num" id="bnum"><span id="bval">0</span></p>
+      <p class="brief__txt">anomalías por revisar. La plataforma funciona <strong>de forma segura y conforme</strong>.</p>
+    </div>
+    <div class="brief__side">
+      <p class="brief__seq-title"><i data-lucide="check-check"></i>Revisado esta mañana</p>
+      <ul class="seq">
+        <li><i data-lucide="file-lock-2"></i><span>Pico de accesos a documentación <strong>Confidencial</strong></span><span>${reason}</span></li>
+        <li><i data-lucide="shield-alert"></i><span>Queda <strong>1 alerta</strong>: intento de acceso a un documento restringido</span><span>Prioridad alta</span></li>
+      </ul>
+      <div class="brief__act">
+        <a class="btn btn--primary" href="carlos-alerta.html"><i data-lucide="shield-alert"></i>Revisar la siguiente alerta</a>
+      </div>
+      <p class="logline"><i data-lucide="history"></i>Registrado en el Audit Trail · cerrada por Carlos Ruiz a las ${time}<button type="button" id="undo">Deshacer</button></p>
+    </div>`;
+
+  const ALLDONE = `
+    <div class="brief__fig">
+      <span class="brief__tag" id="brief-tag"><i data-lucide="shield-check"></i>Todo revisado</span>
+      <p class="brief__num num" id="bnum"><span id="bval">0</span></p>
+      <p class="brief__txt">alertas abiertas. La plataforma funciona <strong>de forma segura y conforme</strong> a las políticas.</p>
+    </div>
+    <div class="brief__side">
+      <p class="brief__seq-title"><i data-lucide="check-check"></i>Revisado esta mañana</p>
+      <ul class="seq">
+        <li><i data-lucide="file-lock-2"></i><span>Pico de accesos a documentación <strong>Confidencial</strong></span><span>Actividad legítima · 08:14</span></li>
+        <li><i data-lucide="shield-alert"></i><span>Intento de acceso a <strong>Plan Estratégico 2027</strong></span><span>Bloqueo correcto · 08:27</span></li>
+      </ul>
+      <div class="brief__act">
+        <a class="btn btn--primary" href="carlos-informe.html"><i data-lucide="file-text"></i>Generar informe semanal</a>
+        <a class="btn btn--ghost" href="carlos-audit.html?q=Resultados%20Q2"><i data-lucide="file-search"></i>Abrir Audit Explorer</a>
+      </div>
+      <p class="logline"><i data-lucide="history"></i>2 alertas cerradas por Carlos Ruiz · registradas en el Audit Trail</p>
+    </div>`;
+
+  function countDown(from, to, dur) {
+    return new Promise(done => {
+      const el = $('bval'), t0 = performance.now();
+      const ease = t => 1 - Math.pow(1 - t, 3);
+      (function step(now) {
+        const t = Math.max(0, Math.min(1, (now - t0) / dur));
+        el.textContent = Math.round(from + (to - from) * ease(t));
+        t < 1 ? requestAnimationFrame(step) : done();
+      })(t0);
+    });
+  }
+  function landEffects() {
+    brief.classList.add('sweep', 'anim-in');
+    const fig = brief.querySelector('.brief__fig');
+    fig.insertAdjacentHTML('beforeend', '<span class="ripple"></span><span class="ripple r2"></span>');
+    $('bnum').classList.add('land');
+    setTimeout(() => { brief.classList.remove('sweep'); fig.querySelectorAll('.ripple').forEach(r => r.remove()); }, 1400);
+  }
+  // Count the open anomaly down to 0, then settle into the calm state.
+  async function closeWithCountdown(time, reason) {
+    if (reduceMotion) return renderCalm(time, reason, true);
+    $('confirm-slot').innerHTML = '';
+    brief.classList.remove('anim');
+    brief.classList.add('is-counting');
+    $('brief-tag').innerHTML = '<i data-lucide="shield-check"></i>Cerrando la alerta…'; draw();
+    await new Promise(r => setTimeout(r, 250));
+    await countDown(42, 0, 1300);
+    renderCalm(time, reason, true);
+    landEffects();
+  }
+  function renderAllDone() {
+    brief.className = 'brief is-calm'; brief.innerHTML = ALLDONE;
+    if (!reduceMotion) {
+      $('bval').textContent = '1'; brief.classList.add('is-counting');
+      setTimeout(() => countDown(1, 0, 600).then(() => { brief.classList.remove('is-counting'); landEffects(); }), 500);
+    }
+    $('gh-sec-n').textContent = '0';
+    $('gh-sec-d').innerHTML = '<i data-lucide="arrow-down"></i>2 <span>desde las 08:00</span>';
+    $('gh-sec-d').className = 'd up';
+    $('gh-sec').classList.remove('is-warn');
+    const b = $('nav-badge'); if (b) b.remove();
+    draw();
+    showToast('Alerta cerrada y registrada en el Audit Trail');
+  }
+  function renderOpen() {
+    brief.className = 'brief anim'; brief.innerHTML = OPEN; draw();
+    $('close-btn').addEventListener('click', askClose);
+  }
+  function renderCalm(time, reason, announce) {
+    brief.className = 'brief is-calm'; brief.innerHTML = CALM(time, reason); draw();
+    $('gh-sec-n').textContent = '1';
+    $('gh-sec-d').innerHTML = '<i data-lucide="arrow-down"></i>1 <span>desde las 08:00</span>';
+    $('gh-sec-d').className = 'd up';
+    const b = $('nav-badge'); if (b) b.textContent = '1';
+    draw();
+    $('undo').addEventListener('click', () => {
+      renderOpen();
+      $('gh-sec-n').textContent = '2';
+      $('gh-sec-d').innerHTML = '<i data-lucide="arrow-up"></i>1 <span>desde ayer</span>'; $('gh-sec-d').className = 'd warn';
+      if (b) b.textContent = '2';
+      draw(); showToast('Alerta reabierta. El cambio queda registrado');
+    });
+    if (announce) showToast('Alerta cerrada y registrada en el Audit Trail');
+  }
+  function askClose() {
+    $('brief-act').hidden = true;
+    $('confirm-slot').innerHTML = `
+      <div class="confirm" role="group" aria-labelledby="cf-t">
+        <p id="cf-t"><i data-lucide="info"></i>Indica el motivo. El cierre quedará registrado con tu nombre en el Audit Trail.</p>
+        <div class="opts">
+          <label class="opt"><input type="radio" name="why" value="Actividad legítima · cierre trimestral" checked>Actividad legítima · cierre trimestral</label>
+          <label class="opt"><input type="radio" name="why" value="Revisado sin incidencias">Revisado sin incidencias</label>
+        </div>
+        <div class="brief__act" style="margin-top:0">
+          <button class="btn btn--primary" type="button" id="cf-ok"><i data-lucide="check"></i>Confirmar cierre</button>
+          <button class="btn btn--ghost" type="button" id="cf-no">Cancelar</button>
+        </div>
+      </div>`;
+    draw();
+    $('cf-ok').focus();
+    $('cf-no').addEventListener('click', () => { $('confirm-slot').innerHTML = ''; $('brief-act').hidden = false; $('close-btn').focus(); });
+    $('cf-ok').addEventListener('click', () => {
+      const why = document.querySelector('input[name="why"]:checked').value;
+      closeWithCountdown('08:06', why);
+    });
+  }
+  if (params.get('done') === '2') renderAllDone();
+  else if (params.get('done') === '1') { renderOpen(); setTimeout(() => closeWithCountdown('08:14', 'Actividad legítima · cierre trimestral'), 700); }
+  else renderOpen();
+
+  /* ---------- Audit explorer ---------- */
+  $('ax-form').addEventListener('submit', e => {
+    if (!$('ax-q').value.trim()) {
+      e.preventDefault();
+      const h = $('ax-hint');
+      h.classList.add('is-error');
+      h.innerHTML = '<i data-lucide="circle-alert"></i>Escribe el nombre de un documento, una persona o una acción. Por ejemplo: «Resultados Q2»';
+      draw(); $('ax-q').focus();
+    }
+  });
+
+  /* ---------- Security & access ---------- */
+  const VIEWS = {
+    nivel: { meta: 'Accesos por nivel de confidencialidad · últimos 7 días · 15.702 en total', head: ['Nivel', 'Accesos', 'Accesos', 'vs. 4 semanas'], rows: [
+      { n: 'Público', v: 8412, q: ['arrow-up', '3 %'] },
+      { n: 'Uso interno', v: 5230, q: ['arrow-up', '5 %'] },
+      { n: 'Confidencial', v: 1846, q: ['arrow-up', '42 %'], flag: true },
+      { n: 'Restringido', v: 214, q: ['equal', 'Estable'] } ] },
+    area: { meta: 'Accesos a documentos Confidencial por área · últimos 7 días', head: ['Área', 'Accesos', 'Accesos', 'vs. 4 semanas'], rows: [
+      { n: 'Finanzas', v: 912, q: ['arrow-up', '118 %'], flag: true },
+      { n: 'Gabinete', v: 338, q: ['arrow-up', '12 %'] },
+      { n: 'Auditoría interna', v: 241, q: ['arrow-up', '21 %'] },
+      { n: 'Comunicación', v: 205, q: ['arrow-down', '4 %'] },
+      { n: 'Marketing', v: 150, q: ['equal', 'Estable'] } ] },
+    hora: { meta: 'Accesos a documentos Confidencial por franja horaria · últimos 7 días', head: ['Franja', 'Accesos', 'Accesos', 'vs. 4 semanas'], rows: [
+      { n: '00:00–06:00', v: 386, q: ['arrow-up', '310 %'], flag: true },
+      { n: '06:00–09:00', v: 214, q: ['arrow-up', '8 %'] },
+      { n: '09:00–14:00', v: 702, q: ['arrow-up', '6 %'] },
+      { n: '14:00–19:00', v: 488, q: ['equal', 'Estable'] },
+      { n: '19:00–00:00', v: 56, q: ['arrow-down', '9 %'] } ] },
+  };
+  function renderBars(k) {
+    const V = VIEWS[k], max = Math.max(...V.rows.map(r => r.v));
+    $('acc-meta').textContent = V.meta;
+    $('bars').innerHTML = `<div class="bars__head" aria-hidden="true"><span>${V.head[0]}</span><span></span><span>${V.head[2]}</span><span>${V.head[3]}</span></div>` +
+      V.rows.map((r, i) => `<div class="bar${r.flag ? ' is-flag' : ''}" style="--d:${i * 70}ms">
+        <span class="n">${r.flag ? '<i data-lucide="triangle-alert"></i>' : ''}${r.n}</span>
+        <span class="track" aria-hidden="true"><i style="width:${Math.max(2, r.v / max * 100)}%"></i></span>
+        <span class="v num">${fmt(r.v)}</span>
+        <span class="q"><i data-lucide="${r.q[0]}"></i>${r.q[1]}${r.flag ? ' · inusual' : ''}</span></div>`).join('');
+    draw();
+  }
+  const tabs = [...document.querySelectorAll('#seg button')];
+  tabs.forEach((b, i) => {
+    b.addEventListener('click', () => select(i));
+    b.addEventListener('keydown', e => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { e.preventDefault(); select((i + (e.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length, true); }
+    });
+  });
+  function select(i, focus) {
+    tabs.forEach((t, j) => { t.setAttribute('aria-selected', j === i); t.tabIndex = j === i ? 0 : -1; });
+    if (focus) tabs[i].focus();
+    renderBars(tabs[i].dataset.v);
+  }
+  renderBars('nivel');
+
+  /* ---------- Permission review ---------- */
+  const perm = $('perm'), pbtn = $('perm-btn');
+  pbtn.addEventListener('click', () => { perm.hidden = false; pbtn.hidden = true; pbtn.setAttribute('aria-expanded', 'true'); $('perm-send').focus(); });
+  $('perm-cancel').addEventListener('click', () => { perm.hidden = true; pbtn.hidden = false; pbtn.setAttribute('aria-expanded', 'false'); pbtn.focus(); });
+  $('perm-send').addEventListener('click', () => {
+    const btn = $('perm-send');
+    btn.disabled = true; btn.innerHTML = '<i data-lucide="loader-circle" class="spin"></i>Enviando…'; draw();
+    setTimeout(() => {
+      perm.outerHTML = `<div class="sent" role="status"><i data-lucide="circle-check"></i><span>Solicitud enviada a Administración de la plataforma. Incidencia <strong>INC-2026-0412</strong> registrada a las 08:21.</span></div>`;
+      $('rec-perm').classList.add('is-done'); draw();
+    }, reduceMotion ? 0 : 900);
+  });
+})();
+</script>
+</body>
+</html>

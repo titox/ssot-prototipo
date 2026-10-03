@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SSoT · Brand Room — Javier Martín</title>
+<link rel="stylesheet" href="assets/ssot.css">
+<style>
+.hq { font-size: 40px; line-height: 1.1; font-weight: 500; letter-spacing: -.02em; margin: 0; }
+.hq span { color: var(--blue); }
+
+/* Status strip */
+.status-strip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--s-5); margin-top: var(--s-6); }
+.stat { background: var(--grey-0); border: 1px solid var(--grey-2); border-radius: var(--r-card); padding: var(--s-5); box-shadow: var(--shadow-1); display: flex; flex-direction: column; min-height: 132px; text-align: left; cursor: pointer; transition: border-color .15s, box-shadow .15s; }
+.stat:hover { border-color: var(--grey-3); box-shadow: var(--shadow-2); }
+.stat__label { font-size: 14px; color: var(--grey-7); font-weight: 500; display: flex; align-items: center; gap: 6px; }
+.stat__label svg { width: 16px; height: 16px; color: var(--blue); }
+.stat__value { font-size: 48px; line-height: 1.05; font-weight: 600; letter-spacing: -.03em; margin-top: var(--s-2); }
+.stat__value small { font-size: 22px; font-weight: 500; letter-spacing: 0; }
+.stat__foot { margin-top: auto; padding-top: var(--s-2); font-size: 13px; color: var(--grey-6); display: flex; align-items: center; gap: 4px; }
+.stat__foot svg { width: 15px; height: 15px; }
+.stat--alert { border-color: var(--coral-dark); }
+.stat--alert .stat__foot { color: var(--coral-dark); font-weight: 600; }
+
+/* Notice (story trigger) */
+.notice { margin-top: var(--s-6); display: grid; grid-template-columns: auto 1fr auto; gap: var(--s-5); align-items: center; padding: var(--s-5) var(--s-6); background: var(--grey-9); color: var(--grey-0); border-radius: var(--r-card); position: relative; overflow: hidden; }
+.notice::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 4px; background: var(--blue); }
+.notice__icon { width: 48px; height: 48px; border-radius: var(--r-card); display: grid; place-items: center; background: rgba(0,102,255,.18); color: #8FB8FF; }
+.notice__icon svg { width: 24px; height: 24px; }
+.notice__tag { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--grey-3); display: flex; gap: 6px; align-items: center; }
+.notice__tag svg { width: 14px; height: 14px; color: var(--blue); }
+.notice p { margin: 4px 0 0; font-size: 16px; color: var(--grey-1); max-width: 70ch; }
+.notice p strong { color: var(--grey-0); font-weight: 600; }
+.notice .btn--ghost { color: var(--grey-1); border-color: var(--grey-7); }
+.notice .btn--ghost:hover { background: var(--grey-8); }
+.notice__actions { display: flex; gap: var(--s-2); }
+
+.row2 { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: var(--s-5); margin-top: var(--s-8); }
+.row3 { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: var(--s-5); margin-top: var(--s-5); }
+
+/* Compliance trend (variant 3) */
+.cmp__top { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s-4); }
+.cmp__big { font-size: 48px; font-weight: 600; letter-spacing: -.03em; line-height: 1; }
+.cmp__sub { font-size: 14px; color: var(--grey-7); }
+.chart { position: relative; margin-top: var(--s-4); }
+.chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+.chart .hit { fill: transparent; cursor: pointer; }
+.chart .pt { fill: var(--blue); stroke: var(--grey-0); stroke-width: 2; }
+.tip { position: absolute; pointer-events: none; background: var(--grey-9); color: var(--grey-0); font-size: 12px; padding: 6px 10px; border-radius: 6px; white-space: nowrap; transform: translate(-50%, calc(-100% - 10px)); opacity: 0; transition: opacity .1s; }
+.tip b { font-weight: 600; }
+.tip.is-on { opacity: 1; }
+.cause { display: flex; gap: var(--s-3); align-items: flex-start; margin-top: var(--s-4); padding: var(--s-3) var(--s-4); border-radius: var(--r-ctrl); background: var(--yellow-very-light); color: var(--yellow-very-dark); }
+.cause svg { width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px; }
+.cause strong { font-weight: 600; display: block; }
+.cause p { margin: 0; font-size: 14px; }
+.issues { list-style: none; margin: var(--s-4) 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s-3); }
+.issues li { padding: var(--s-3); border: 1px solid var(--grey-2); border-radius: var(--r-ctrl); display: flex; flex-direction: column; gap: 4px; }
+.issues b { font-size: 24px; font-weight: 600; line-height: 1; }
+.issues .top { display: flex; align-items: center; justify-content: space-between; gap: var(--s-2); }
+.issues span { font-size: 13px; color: var(--grey-7); }
+.table-toggle { margin-top: var(--s-3); font-size: 13px; font-weight: 600; color: var(--blue); background: none; border: 0; padding: 0; display: inline-flex; align-items: center; gap: 4px; }
+.table-toggle svg { width: 14px; height: 14px; }
+.dtable { width: 100%; border-collapse: collapse; margin-top: var(--s-3); font-size: 13px; }
+.dtable th, .dtable td { text-align: right; padding: 4px 6px; border-bottom: 1px solid var(--grey-1); }
+.dtable th:first-child, .dtable td:first-child { text-align: left; }
+.dtable th { color: var(--grey-6); font-weight: 600; }
+
+/* Training module */
+.train__list { list-style: none; margin: 0; padding: 0; }
+.train__list li { display: flex; gap: var(--s-3); align-items: center; min-height: 52px; border-bottom: 1px solid var(--grey-1); font-size: 14px; }
+.train__list li:last-child { border-bottom: 0; }
+.train__list .ico { width: 32px; height: 32px; border-radius: var(--r-ctrl); background: var(--blue-tint); color: var(--blue); display: grid; place-items: center; flex-shrink: 0; }
+.train__list .ico svg { width: 16px; height: 16px; }
+.train__list p { margin: 0; font-weight: 500; flex: 1; }
+.train__list small { color: var(--grey-6); font-size: 12px; display: block; font-weight: 400; }
+.train__agent { display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); padding: var(--s-3) var(--s-4); margin: var(--s-4) 0; background: var(--grey-1); border-radius: var(--r-ctrl); font-size: 13px; color: var(--grey-7); }
+.train__agent strong { color: var(--grey-9); font-weight: 600; font-size: 14px; }
+
+/* Resources */
+.res { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s-3); }
+.res a { display: flex; flex-direction: column; gap: var(--s-2); padding: var(--s-4); border: 1px solid var(--grey-2); border-radius: var(--r-ctrl); font-weight: 500; font-size: 14px; transition: background .15s, border-color .15s; }
+.res a:hover { background: var(--blue-tint); border-color: var(--blue); color: var(--blue); }
+.res a svg { width: 22px; height: 22px; color: var(--blue); }
+.res a small { color: var(--grey-6); font-weight: 400; font-size: 12px; }
+
+/* Publications */
+.pub { list-style: none; margin: 0; padding: 0; }
+.pub li { display: grid; grid-template-columns: 1fr auto; gap: var(--s-3); align-items: center; min-height: 56px; border-bottom: 1px solid var(--grey-1); padding: var(--s-2) 0; }
+.pub li:last-child { border-bottom: 0; }
+.pub p { margin: 0; font-weight: 500; font-size: 14px; }
+.pub small { color: var(--grey-6); font-size: 12px; }
+.status--bad { background: var(--coral-very-light); color: var(--coral-dark); }
+
+/* Agent suggestions */
+.sugs { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-4); margin-top: var(--s-5); }
+.sug { display: flex; flex-direction: row; gap: var(--s-4); align-items: flex-start; padding: var(--s-4) var(--s-5); background: var(--grey-0); border: 1px solid var(--grey-2); border-left: 3px solid var(--blue); border-radius: var(--r-card); box-shadow: var(--shadow-1); }
+.sug > svg { width: 20px; height: 20px; color: var(--blue); flex-shrink: 0; margin-top: 2px; }
+.sug__tag { font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--grey-6); }
+.sug p { margin: 4px 0 var(--s-3); font-size: 15px; color: var(--grey-8); }
+.sug p strong { font-weight: 600; color: var(--grey-9); }
+.sug .btn { height: 40px; font-size: 14px; }
+.btn--soft { background: var(--blue-tint); color: var(--blue); }
+.btn--soft:hover { background: var(--blue); color: var(--grey-0); }
+.sug.is-done { opacity: .65; }
+
+@media (max-width: 1180px) { .status-strip { grid-template-columns: 1fr 1fr; } .row2, .row3, .sugs { grid-template-columns: 1fr; } .notice { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body data-page="inicio">
+<div class="app">
+  <nav class="nav" id="nav" aria-label="Principal"></nav>
+
+  <main class="main">
+    <div class="greet">
+      <p><strong>Buenos días, Javier.</strong> Este es el estado de la marca hoy.</p>
+      <span class="greet__time num"><i data-lucide="clock-3" style="width:16px;height:16px"></i>Martes, 6 de octubre · 09:15</span>
+    </div>
+
+    <h1 class="hq">¿Está la IA representando <span>correctamente</span> nuestra marca?</h1>
+
+    <!-- Brand Room Status -->
+    <section class="status-strip" aria-label="Brand Room Status">
+      <button class="stat" type="button" data-soon>
+        <span class="stat__label"><i data-lucide="shield-check"></i>Brand Compliance</span>
+        <span class="stat__value num">98<small>%</small></span>
+        <span class="stat__foot up"><i data-lucide="arrow-up-right"></i>Sube 1 pt · 30 días</span>
+      </button>
+      <button class="stat" type="button" data-soon>
+        <span class="stat__label"><i data-lucide="layout-template"></i>Plantillas activas</span>
+        <span class="stat__value num">42</span>
+        <span class="stat__foot"><i data-lucide="clock"></i>1 pendiente de validar</span>
+      </button>
+      <button class="stat" type="button" data-soon>
+        <span class="stat__label"><i data-lucide="refresh-cw"></i>Recursos actualizados</span>
+        <span class="stat__value num">18</span>
+        <span class="stat__foot">Esta semana</span>
+      </button>
+      <button class="stat stat--alert" type="button" data-soon>
+        <span class="stat__label"><i data-lucide="triangle-alert" style="color:var(--coral-dark)"></i>Alertas de marca</span>
+        <span class="stat__value num">3</span>
+        <span class="stat__foot"><i data-lucide="circle-alert"></i>2 logotipos antiguos · 1 plantilla</span>
+      </button>
+    </section>
+
+    <!-- Story trigger -->
+    <section class="notice" aria-labelledby="notice-title">
+      <span class="notice__icon"><i data-lucide="layout-template"></i></span>
+      <div>
+        <span class="notice__tag" id="notice-title"><i data-lucide="bell"></i>Pendiente de validar · 08:52</span>
+        <p><strong>Comunicación ha subido una nueva plantilla para los resultados semestrales.</strong> Revísala antes de que esté disponible para toda la organización.</p>
+      </div>
+      <div class="notice__actions">
+        <a class="btn btn--primary" href="javier-plantilla.html"><i data-lucide="search-check"></i>Revisar plantilla</a>
+      </div>
+    </section>
+
+    <!-- Compliance + Training -->
+    <div class="row2">
+      <section class="panel" aria-labelledby="cmp-title">
+        <div class="panel__head"><h2 id="cmp-title"><i data-lucide="shield-check"></i>Brand Compliance</h2><span class="panel__meta">2.140 documentos · últimas 12 semanas</span></div>
+        <div class="cmp__top">
+          <span class="cmp__sub">Documentos generados que cumplen el tono de voz</span>
+          <span class="cmp__big num">94%</span>
+        </div>
+        <div class="chart" id="chart">
+          <svg viewBox="0 0 600 170" role="img" aria-labelledby="chart-desc">
+            <desc id="chart-desc">Cumplimiento del tono por semana, de S29 a S40. Cae a 92 % en S38 y se recupera a 94 % en S40.</desc>
+            <g id="grid"></g><polyline id="line" fill="none" stroke="#0066FF" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><g id="pts"></g>
+          </svg>
+          <div class="tip" id="tip"></div>
+        </div>
+        <div class="cause">
+          <i data-lucide="triangle-alert"></i>
+          <div><strong>S38 · caída a 92 %</strong><p>El 8 % de las notas de prensa usaron un tono más promocional del recomendado para comunicación institucional.</p></div>
+        </div>
+        <ul class="issues">
+          <li><div class="top"><b class="num">12</b><span class="status status--warn"><i data-lucide="circle-alert"></i>Revisar</span></div><span>usan una plantilla obsoleta</span></li>
+          <li><div class="top"><b class="num">4</b><span class="status status--warn"><i data-lucide="circle-alert"></i>Revisar</span></div><span>recursos duplicados</span></li>
+          <li><div class="top"><b class="num">2</b><span class="status status--bad"><i data-lucide="x"></i>No cumple</span></div><span>usan un logotipo antiguo</span></li>
+        </ul>
+        <button class="table-toggle" type="button" id="tbl-btn" aria-expanded="false"><i data-lucide="table"></i>Ver datos en tabla</button>
+        <table class="dtable" id="tbl" hidden><thead><tr><th>Semana</th><th>Cumplimiento</th></tr></thead><tbody></tbody></table>
+      </section>
+
+      <section class="panel" aria-labelledby="tr-title">
+        <div class="panel__head"><h2 id="tr-title"><i data-lucide="brain-circuit"></i>IA Training Center</h2><a class="link" href="javier-training.html">Abrir<i data-lucide="arrow-right"></i></a></div>
+        <p class="lbl" style="font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--grey-6);margin:0 0 4px">Últimos recursos añadidos</p>
+        <ul class="train__list">
+          <li><span class="ico"><i data-lucide="book-open"></i></span><p>Nueva guía de comunicación institucional<small>Guía · validada hoy</small></p><span class="status status--ok"><i data-lucide="check"></i>Validada</span></li>
+          <li><span class="ico"><i data-lucide="layout-template"></i></span><p>Plantilla resultados trimestrales<small>Plantilla PowerPoint · ayer</small></p><span class="status status--ok"><i data-lucide="check"></i>Validada</span></li>
+          <li><span class="ico"><i data-lucide="pen-line"></i></span><p>Manual de tono ejecutivo<small>Tono de voz · lunes</small></p><span class="status status--ok"><i data-lucide="check"></i>Validada</span></li>
+        </ul>
+        <div class="train__agent"><span><strong>Agente SSoT · v14</strong><br>1 cambio sin entrenar</span><span class="status status--warn"><i data-lucide="clock"></i>v15 pendiente</span></div>
+        <a class="btn btn--primary" href="javier-training.html" style="width:100%"><i data-lucide="brain-circuit"></i>Entrenar agente</a>
+      </section>
+    </div>
+
+    <!-- Agent suggestions -->
+    <div class="sugs">
+      <article class="sug" id="sug1">
+        <i data-lucide="sparkles"></i>
+        <div><span class="sug__tag">Sugerencia del agente · Versiones</span>
+          <p>Se han detectado <strong>18 documentos</strong> que todavía utilizan la versión anterior del argumentario de IA.</p>
+          <button class="btn btn--soft" type="button" data-done="Aviso enviado a los 18 autores con la versión vigente"><i data-lucide="send"></i>Avisar a los autores</button></div>
+      </article>
+      <article class="sug" id="sug2">
+        <i data-lucide="sparkles"></i>
+        <div><span class="sug__tag">Sugerencia del agente · Entrenamiento</span>
+          <p>La nueva <strong>guía de sostenibilidad</strong> aún no está siendo utilizada por el Agente SSoT.</p>
+          <a class="btn btn--soft" href="javier-training.html"><i data-lucide="brain-circuit"></i>Añadir al entrenamiento</a></div>
+      </article>
+    </div>
+
+    <!-- Resources + publications -->
+    <div class="row3">
+      <section class="panel" aria-labelledby="pub-title">
+        <div class="panel__head"><h2 id="pub-title"><i data-lucide="newspaper"></i>Últimas publicaciones</h2><a class="link" href="#" data-soon>Ver todas</a></div>
+        <ul class="pub">
+          <li><div><p>Nota de prensa · Fibra 10 Gb</p><small>Comunicación Corporativa · hoy, 08:40</small></div><span class="status status--ok"><i data-lucide="check"></i>On brand</span></li>
+          <li><div><p>Post LinkedIn · Junta General de Accionistas</p><small>Redes sociales · ayer</small></div><span class="status status--warn"><i data-lucide="circle-alert"></i>Revisar</span></li>
+          <li><div><p>Presentación comercial · Empresas Q4</p><small>Ventas B2B · ayer · logotipo 2019</small></div><span class="status status--bad"><i data-lucide="x"></i>No cumple guidelines</span></li>
+          <li><div><p>Newsletter interna · Conectados</p><small>Comunicación interna · lunes</small></div><span class="status status--ok"><i data-lucide="check"></i>On brand</span></li>
+        </ul>
+      </section>
+      <section class="panel" aria-labelledby="res-title">
+        <div class="panel__head"><h2 id="res-title"><i data-lucide="folder-open"></i>Recursos de marca</h2></div>
+        <div class="res">
+          <a href="#" data-soon><i data-lucide="book-open"></i>Guías de identidad<small>v2026.1</small></a>
+          <a href="javier-tono.html"><i data-lucide="message-square-quote"></i>Tono de voz<small>v3.2</small></a>
+          <a href="#" data-soon><i data-lucide="images"></i>Biblioteca de imágenes<small>1.284</small></a>
+          <a href="#" data-soon><i data-lucide="badge"></i>Logos<small>8 versiones</small></a>
+          <a href="#" data-soon><i data-lucide="presentation"></i>Templates PowerPoint<small>24</small></a>
+          <a href="#" data-soon><i data-lucide="file-text"></i>Templates Word<small>18</small></a>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<script src="assets/javier.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script>
+  // Compliance trend — single series, one hue, hover tooltip + table view
+  const data = [['S29',95],['S30',96],['S31',96],['S32',97],['S33',96],['S34',97],['S35',97],['S36',96],['S37',95],['S38',92],['S39',93],['S40',94]];
+  const W = 600, H = 140, PADL = 36, PADR = 12, min = 90, max = 100;
+  const x = i => PADL + i * (W - PADL - PADR) / (data.length - 1);
+  const y = v => 10 + (max - v) / (max - min) * (H - 20);
+  const NS = 'http://www.w3.org/2000/svg';
+  const grid = document.getElementById('grid');
+  [90, 94, 100].forEach(v => {
+    const l = document.createElementNS(NS, 'line');
+    Object.entries({ x1: PADL, x2: W - PADR, y1: y(v), y2: y(v), stroke: '#D1D5E4', 'stroke-width': 1 }).forEach(([k, val]) => l.setAttribute(k, val));
+    if (v === 94) l.setAttribute('stroke-dasharray', '3 4');
+    grid.appendChild(l);
+    const t = document.createElementNS(NS, 'text');
+    Object.entries({ x: 0, y: y(v) + 4, fill: '#58617A', 'font-size': 12 }).forEach(([k, val]) => t.setAttribute(k, val));
+    t.textContent = v === 94 ? '94 %' : v + ' %'; grid.appendChild(t);
+  });
+  [0, data.length - 1].forEach(i => {
+    const t = document.createElementNS(NS, 'text');
+    Object.entries({ x: x(i), y: H + 22, fill: '#58617A', 'font-size': 12, 'text-anchor': i ? 'end' : 'start' }).forEach(([k, val]) => t.setAttribute(k, val));
+    t.textContent = data[i][0]; grid.appendChild(t);
+  });
+  document.getElementById('line').setAttribute('points', data.map(([, v], i) => `${x(i)},${y(v)}`).join(' '));
+  const pts = document.getElementById('pts'), tip = document.getElementById('tip'), chart = document.getElementById('chart');
+  data.forEach(([w, v], i) => {
+    if (i === 9 || i === data.length - 1) {
+      const c = document.createElementNS(NS, 'circle');
+      Object.entries({ cx: x(i), cy: y(v), r: 5, class: 'pt' }).forEach(([k, val]) => c.setAttribute(k, val));
+      pts.appendChild(c);
+    }
+    const hit = document.createElementNS(NS, 'circle');
+    Object.entries({ cx: x(i), cy: y(v), r: 14, class: 'hit', tabindex: 0, 'aria-label': `${w}: ${v} %` }).forEach(([k, val]) => hit.setAttribute(k, val));
+    const show = () => {
+      const r = chart.getBoundingClientRect(), s = r.width / W;
+      tip.innerHTML = `<b>${w}</b> · ${v} %${i === 9 ? ' · tono promocional' : ''}`;
+      tip.style.left = x(i) * s + 'px'; tip.style.top = y(v) * s + 'px'; tip.classList.add('is-on');
+    };
+    hit.addEventListener('mouseenter', show); hit.addEventListener('focus', show);
+    hit.addEventListener('mouseleave', () => tip.classList.remove('is-on')); hit.addEventListener('blur', () => tip.classList.remove('is-on'));
+    pts.appendChild(hit);
+  });
+  document.querySelector('#tbl tbody').innerHTML = data.map(([w, v]) => `<tr><td>${w}</td><td class="num">${v} %</td></tr>`).join('');
+  const tb = document.getElementById('tbl-btn');
+  tb.addEventListener('click', () => { const t = document.getElementById('tbl'); t.hidden = !t.hidden; tb.setAttribute('aria-expanded', !t.hidden); tb.lastChild.textContent = t.hidden ? 'Ver datos en tabla' : 'Ocultar tabla'; });
+
+  document.querySelectorAll('[data-done]').forEach(b => b.addEventListener('click', () => {
+    b.closest('.sug').classList.add('is-done'); b.disabled = true; b.innerHTML = '<i data-lucide="check"></i>Hecho'; draw(); showToast(b.dataset.done);
+  }));
+</script>
+</body>
+</html>

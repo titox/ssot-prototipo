@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SSoT · Audit Explorer — Carlos Ruiz</title>
+<link rel="stylesheet" href="assets/ssot.css">
+<style>
+.search { display: flex; gap: var(--s-3); align-items: center; padding: var(--s-2) var(--s-2) var(--s-2) var(--s-5); background: var(--grey-0); border: 1.5px solid var(--grey-3); border-radius: var(--r-card); box-shadow: var(--shadow-1); transition: border-color .15s, box-shadow .15s; }
+.search:focus-within { border-color: var(--blue); box-shadow: 0 0 0 4px var(--blue-tint); }
+.search > svg { width: 22px; height: 22px; color: var(--grey-5); }
+.search input { flex: 1; border: 0; outline: 0; font-size: 20px; height: 52px; background: transparent; min-width: 0; }
+.search .btn { height: 52px; padding: 0 var(--s-6); }
+.hint { margin: var(--s-2) 0 0; font-size: 13px; color: var(--grey-6); display: flex; gap: 6px; align-items: center; }
+.hint svg { width: 15px; height: 15px; }
+.hint.is-error { color: var(--coral-dark); font-weight: 500; }
+.sugg { display: flex; flex-wrap: wrap; gap: var(--s-2); margin-top: var(--s-3); align-items: center; }
+.sugg span { font-size: 13px; color: var(--grey-6); }
+
+#out { margin-top: var(--s-6); }
+
+/* Loading */
+.load { display: grid; gap: var(--s-3); padding: var(--s-6); background: var(--grey-0); border: 1px solid var(--grey-2); border-radius: var(--r-card); }
+.load p { margin: 0; display: flex; gap: var(--s-2); align-items: center; font-weight: 600; }
+.load p svg { color: var(--blue); }
+.sk { height: 14px; border-radius: 6px; background: linear-gradient(90deg, var(--grey-1), var(--grey-2), var(--grey-1)); background-size: 200% 100%; animation: shimmer 1.2s linear infinite; }
+@keyframes shimmer { to { background-position: -200% 0; } }
+
+/* Empty */
+.empty { padding: var(--s-8); background: var(--grey-0); border: 1px dashed var(--grey-3); border-radius: var(--r-card); text-align: left; }
+.empty h2 { margin: 0 0 var(--s-2); font-size: 20px; font-weight: 600; }
+.empty p { margin: 0 0 var(--s-4); color: var(--grey-7); }
+
+/* Result header */
+.doc { display: grid; grid-template-columns: 48px 1fr auto; gap: var(--s-4); align-items: center; padding: var(--s-5) var(--s-6); background: var(--grey-0); border: 1px solid var(--grey-2); border-radius: var(--r-card) var(--r-card) 0 0; border-bottom: 0; }
+.doc__ico { width: 48px; height: 48px; border-radius: var(--r-ctrl); background: var(--grey-9); color: var(--grey-0); display: grid; place-items: center; }
+.doc h2 { margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -.01em; }
+.doc__meta { margin: 4px 0 0; display: flex; flex-wrap: wrap; gap: var(--s-2); align-items: center; font-size: 13px; color: var(--grey-6); }
+.status--lock { background: var(--grey-9); color: var(--grey-0); }
+.status--bad { background: var(--coral-very-light); color: var(--coral-dark); }
+.doc__act { display: flex; gap: var(--s-2); }
+
+/* Chapters — signature */
+.story { background: var(--grey-0); border: 1px solid var(--grey-2); border-radius: 0 0 var(--r-card) var(--r-card); box-shadow: var(--shadow-1); }
+.chap { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); padding: var(--s-5) var(--s-6) 0; border-top: 1px solid var(--grey-2); }
+.ch { text-align: left; background: none; border: 0; padding: 0 var(--s-3) var(--s-5) 0; display: grid; gap: 6px; align-content: start; position: relative; border-bottom: 3px solid transparent; }
+.ch__line { display: flex; align-items: center; }
+.ch__dot { width: 14px; height: 14px; border-radius: 50%; background: var(--grey-0); border: 2px solid var(--blue); flex-shrink: 0; }
+.ch__bar { flex: 1; height: 2px; background: var(--grey-2); }
+.ch:last-child .ch__bar { visibility: hidden; }
+.ch__k { font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--grey-6); margin-top: 6px; }
+.ch__t { font-size: 15px; font-weight: 500; line-height: 1.35; color: var(--grey-9); }
+.ch__s { font-size: 13px; color: var(--grey-6); display: flex; align-items: center; gap: 4px; }
+.ch__s svg { width: 14px; height: 14px; }
+.ch:hover .ch__t { color: var(--blue); }
+.ch[aria-selected="true"] { border-bottom-color: var(--blue); }
+.ch[aria-selected="true"] .ch__dot { background: var(--blue); box-shadow: 0 0 0 4px var(--blue-tint); }
+.ch[aria-selected="true"] .ch__k { color: var(--blue); }
+.ch.is-warn .ch__dot { border-color: #A7863E; }
+.ch.is-warn[aria-selected="true"] .ch__dot { background: #A7863E; box-shadow: 0 0 0 4px var(--yellow-very-light); }
+.ch.is-warn .ch__s { color: var(--yellow-very-dark); font-weight: 600; }
+.anim .ch { animation: rise .35s var(--ease-out) both; animation-delay: var(--d); }
+
+.detail { padding: var(--s-6); border-top: 1px solid var(--grey-2); background: var(--grey-1); border-radius: 0 0 var(--r-card) var(--r-card); }
+.detail__in { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: var(--s-6); animation: rise .25s var(--ease-out) both; }
+.detail h3 { margin: 0 0 var(--s-1); font-size: 18px; font-weight: 600; }
+.detail .lead { margin: 0 0 var(--s-4); color: var(--grey-7); font-size: 15px; line-height: 1.5; }
+.detail .lead strong { color: var(--grey-9); font-weight: 600; }
+.card { background: var(--grey-0); border: 1px solid var(--grey-2); border-radius: var(--r-card); padding: var(--s-4) var(--s-5); }
+.card h4 { margin: 0 0 var(--s-2); font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--grey-6); }
+.card p { margin: 0; font-size: 14px; line-height: 1.5; color: var(--grey-8); }
+.card + .card { margin-top: var(--s-3); }
+.card.warn { background: var(--yellow-very-light); border-color: #A7863E; }
+.card.warn h4 { color: var(--yellow-very-dark); display: flex; gap: 6px; align-items: center; }
+.card.warn h4 svg { width: 15px; height: 15px; }
+.card .btn { height: 36px; font-size: 13px; padding: 0 var(--s-3); margin-top: var(--s-3); }
+.card.bad { background: var(--coral-very-light); border-color: var(--coral-dark); }
+.card.bad h4 { color: var(--coral-dark); display: flex; gap: 6px; align-items: center; }
+.card.bad h4 svg { width: 15px; height: 15px; }
+.card.ok { background: var(--turquoise-very-light); border-color: var(--turquoise-very-dark); }
+.card.ok h4 { color: var(--turquoise-very-dark); display: flex; gap: 6px; align-items: center; }
+.card.ok h4 svg { width: 15px; height: 15px; }
+.btn--danger { background: var(--coral-dark); color: var(--grey-0); }
+.btn--danger:hover { background: #6B302A; }
+
+.tbl { width: 100%; border-collapse: collapse; font-size: 14px; background: var(--grey-0); border: 1px solid var(--grey-2); border-radius: var(--r-card); overflow: hidden; }
+.tbl th { text-align: left; font-size: 12px; font-weight: 600; color: var(--grey-6); padding: var(--s-3); border-bottom: 1px solid var(--grey-2); background: var(--grey-0); }
+.tbl td { height: 52px; padding: 0 var(--s-3); border-bottom: 1px solid var(--grey-1); }
+.tbl tr:last-child td { border-bottom: 0; }
+.tbl .r { text-align: right; }
+.tbl td small { display: block; font-size: 12px; color: var(--grey-6); }
+.tbl tr.is-flag td { background: var(--yellow-very-light); }
+.tbl tr.is-bad td { background: var(--coral-very-light); }
+.tbl tr.is-gone td { color: var(--grey-5); text-decoration: line-through; }
+.who { display: flex; align-items: center; gap: var(--s-3); }
+.who .avatar { width: 32px; height: 32px; font-size: 12px; }
+.tbl .status svg { width: 13px; height: 13px; }
+
+.vers { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s-2); }
+.vers li { display: grid; grid-template-columns: 56px 1fr auto; gap: var(--s-3); align-items: center; min-height: 56px; padding: 0 var(--s-4); background: var(--grey-0); border: 1px solid var(--grey-2); border-radius: var(--r-ctrl); font-size: 14px; }
+.vers b { font-size: 18px; font-weight: 600; }
+.vers small { display: block; font-size: 12px; color: var(--grey-6); }
+.vers li.is-pub { border: 1.5px solid var(--blue); }
+
+/* Log view */
+.viewbar { display: flex; justify-content: space-between; align-items: center; margin: var(--s-6) 0 var(--s-3); }
+.viewbar h2 { margin: 0; font-size: 18px; font-weight: 600; }
+.seg { display: inline-flex; gap: 2px; padding: 3px; background: var(--grey-0); border: 1px solid var(--grey-2); border-radius: var(--r-ctrl); }
+.seg button { height: 36px; padding: 0 var(--s-3); border: 0; border-radius: 6px; background: transparent; font-size: 13px; font-weight: 500; color: var(--grey-7); display: inline-flex; align-items: center; gap: 6px; }
+.seg button svg { width: 15px; height: 15px; }
+.seg button[aria-pressed="true"] { background: var(--blue-tint); color: var(--blue); font-weight: 600; }
+.log td:first-child { white-space: nowrap; font-variant-numeric: tabular-nums; color: var(--grey-7); width: 140px; }
+
+@media (max-width: 1180px) { .chap { grid-template-columns: repeat(3, 1fr); row-gap: var(--s-4); } .detail__in { grid-template-columns: 1fr; } .doc { grid-template-columns: 48px 1fr; } .doc__act { grid-column: 1 / -1; } }
+</style>
+</head>
+<body data-page="audit">
+<div class="app">
+  <nav class="nav" id="nav" aria-label="Principal"></nav>
+
+  <main class="main">
+    <nav class="crumbs" aria-label="Ruta"><a href="carlos.html">Trust Center</a><i data-lucide="chevron-right"></i><span aria-current="page">Audit Explorer</span></nav>
+    <div class="ph">
+      <div>
+        <h1>Audit Explorer</h1>
+        <p>Reconstruye la historia de cualquier documento: quién lo creó, quién lo consultó y con qué permisos.</p>
+      </div>
+    </div>
+
+    <form class="search" id="form" role="search" novalidate>
+      <i data-lucide="search"></i>
+      <label for="q" class="visually-hidden">Buscar un documento, persona o acción</label>
+      <input id="q" name="q" type="search" placeholder="Documento, persona o acción…" autocomplete="off">
+      <button class="btn btn--primary" type="submit"><i data-lucide="history"></i>Reconstruir historia</button>
+    </form>
+    <p class="hint" id="hint"><i data-lucide="lightbulb"></i>Busca por nombre de documento, persona o acción. Por ejemplo: «Resultados Q2»</p>
+
+    <div id="out"></div>
+  </main>
+</div>
+
+<script src="assets/carlos.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  const out = $('out');
+
+  const CH = [
+    { k: 'Creado', t: 'Lucía Sanz, Finanzas', s: '2 sep · 10:12', detail: () => `
+      <div><h3>Quién lo creó</h3>
+        <p class="lead"><strong>Lucía Sanz</strong>, Directora de Control de Gestión, lo creó el 2 de septiembre a las 10:12 a partir de la plantilla «Informe trimestral de resultados».</p>
+        <table class="tbl"><thead><tr><th>Hecho</th><th>Quién</th><th>Cuándo</th></tr></thead><tbody>
+          <tr><td>Documento creado desde plantilla</td><td>Lucía Sanz</td><td>2 sep · 10:12</td></tr>
+          <tr><td>Clasificado como Confidencial por la IA<small>Confianza 97 %</small></td><td>Agente SSoT</td><td>2 sep · 10:12</td></tr>
+          <tr><td>Clasificación validada</td><td>Laura Pérez</td><td>2 sep · 11:40</td></tr>
+        </tbody></table></div>
+      <div><div class="card"><h4>Owner actual</h4><p>Lucía Sanz · Finanzas</p></div><div class="card"><h4>Clasificación</h4><p>Confidencial · revisión cada 90 días</p></div></div>` },
+    { k: 'Modificado', t: '3 personas, 14 cambios', s: 'hasta 18 sep', detail: () => `
+      <div><h3>Quién lo modificó</h3>
+        <p class="lead"><strong>14 cambios</strong> de 3 personas entre el 2 y el 18 de septiembre. Todas tenían permiso de edición en ese momento.</p>
+        <table class="tbl"><thead><tr><th>Persona</th><th class="r">Cambios</th><th>Qué cambió</th><th>Último</th></tr></thead><tbody>
+          <tr><td><span class="who"><span class="avatar av-2">LS</span>Lucía Sanz</span></td><td class="r num">8</td><td>Resumen ejecutivo y conclusiones</td><td>18 sep</td></tr>
+          <tr><td><span class="who"><span class="avatar av-3">RD</span>Raúl Delgado</span></td><td class="r num">5</td><td>Tablas de márgenes por filial</td><td>16 sep</td></tr>
+          <tr><td><span class="who"><span class="avatar av-4">CB</span>Clara Benítez</span></td><td class="r num">1</td><td>Previsión del cuarto trimestre</td><td>11 sep</td></tr>
+        </tbody></table></div>
+      <div><div class="card ok"><h4><i data-lucide="shield-check"></i>Permisos correctos</h4><p>Las 3 personas tenían edición concedida por la owner.</p></div></div>` },
+    { k: 'Publicado', t: 'Versión 3, aprobada por Dirección Financiera', s: '19 sep · 09:42', warn: 'Marketing usa la v2', detail: () => `
+      <div><h3>Qué versión está publicada</h3>
+        <p class="lead">La <strong>versión 3</strong> es la vigente. La aprobó Fernando Ibáñez, Director Financiero, el 19 de septiembre a las 09:42.</p>
+        <ul class="vers">
+          <li class="is-pub"><b>v3</b><span>Publicada · versión vigente<small>Aprobada por Fernando Ibáñez · 19 sep · 09:42</small></span><span class="status status--ok"><i data-lucide="check"></i>Vigente</span></li>
+          <li><b>v2</b><span>Revisión de Dirección<small>Raúl Delgado · 12 sep</small></span><span class="status status--warn"><i data-lucide="circle-alert"></i>En uso por Marketing</span></li>
+          <li><b>v1</b><span>Borrador inicial<small>Lucía Sanz · 5 sep</small></span><span class="status" style="background:var(--grey-1);color:var(--grey-7)">Archivada</span></li>
+        </ul></div>
+      <div><div class="card warn"><h4><i data-lucide="triangle-alert"></i>Dos versiones en uso</h4><p>Marketing España descargó la v2 el 14 de septiembre y la sigue usando en 2 presentaciones. Los márgenes de Brasil difieren en 1,2 puntos.</p><button class="btn btn--soft" type="button" id="notify" style="background:var(--grey-0);color:var(--blue);border:1px solid var(--grey-2)"><i data-lucide="send"></i>Avisar a Marketing</button></div></div>` },
+    { k: 'Fuentes de la IA', t: '7 fuentes citadas, usado en 6 documentos', s: 'grounding 100 %', detail: () => `
+      <div><h3>Qué fuentes utilizó la IA</h3>
+        <p class="lead">La IA redactó el resumen ejecutivo con <strong>7 fuentes</strong>, todas citadas. Después, este documento ha sido fuente de <strong>6 documentos generados</strong>.</p>
+        <table class="tbl"><thead><tr><th>Fuente</th><th>Tipo</th><th>Clasificación</th></tr></thead><tbody>
+          <tr><td>Cierre contable Q2 · SAP</td><td>Sistema financiero</td><td>Confidencial</td></tr>
+          <tr><td>Resultados filiales · Brasil, Alemania, España, Reino Unido</td><td>4 informes</td><td>Confidencial</td></tr>
+          <tr><td>Resultados Q1 2026 · Grupo</td><td>Documento SSoT</td><td>Uso interno</td></tr>
+          <tr><td>Informe de analistas · Q2 telecomunicaciones Europa</td><td>Fuente externa</td><td>Público</td></tr>
+        </tbody></table></div>
+      <div><div class="card"><h4>Documentos generados con esta fuente</h4><p>Resumen ejecutivo para el Consejo · Comparativa de márgenes por filial · Nota de prensa resultados Q2 · y 3 más</p></div><div class="card ok"><h4><i data-lucide="check"></i>Todas las citas verificadas</h4><p>Ninguna fuente de nivel superior al del documento generado.</p></div></div>` },
+    { k: 'Consultado', t: '46 personas de 4 áreas', s: '18 anoche', warn: '18 anoche', detail: () => `
+      <div><h3>Quién lo consultó</h3>
+        <p class="lead"><strong>46 personas</strong> lo han consultado desde su publicación. 18 lo hicieron anoche, durante el cierre trimestral.</p>
+        <table class="tbl"><thead><tr><th>Área</th><th class="r">Personas</th><th class="r">Consultas</th><th>Última</th></tr></thead><tbody>
+          <tr><td>Finanzas</td><td class="r num">24</td><td class="r num">212</td><td>Hoy · 04:31</td></tr>
+          <tr class="is-flag"><td>Marketing España</td><td class="r num">9</td><td class="r num">31</td><td>Hoy · 06:40<small>Accedió al borrador compartido</small></td></tr>
+          <tr><td>Gabinete</td><td class="r num">8</td><td class="r num">44</td><td>Hoy · 03:58</td></tr>
+          <tr><td>Auditoría interna</td><td class="r num">5</td><td class="r num">12</td><td>Hoy · 04:20</td></tr>
+        </tbody></table></div>
+      <div><a class="card" href="carlos-secuencia.html" style="display:block"><h4>Accesos de anoche</h4><p>Revisados en la alerta ALR-2026-0187 · actividad legítima</p></a></div>` },
+    { k: 'Permisos', t: 'Todos autorizados en su momento', s: '1 grupo a revisar', warn: '1 grupo a revisar', detail: () => `
+      <div><h3>Qué permisos tenía cada uno en ese momento</h3>
+        <p class="lead">Todos los accesos eran válidos con los permisos vigentes. Pero <strong>Marketing España</strong> recibió el borrador por un enlace compartido hoy a las 06:40.</p>
+        <table class="tbl" id="perm-tbl"><thead><tr><th>Grupo o persona</th><th>Permiso</th><th>Concedido por</th><th>Desde</th></tr></thead><tbody>
+          <tr><td>Finanzas · Dirección</td><td>Edición</td><td>Lucía Sanz</td><td>2 sep</td></tr>
+          <tr><td>Gabinete</td><td>Lectura</td><td>Lucía Sanz</td><td>19 sep</td></tr>
+          <tr><td>Auditoría interna</td><td>Lectura</td><td>Política de auditoría</td><td>Siempre</td></tr>
+          <tr class="is-bad" id="mkt-row"><td>Marketing España<small>9 personas</small></td><td>Lectura</td><td>Enlace de Raúl Delgado</td><td>Hoy · 06:40</td></tr>
+        </tbody></table></div>
+      <div id="perm-side"><div class="card bad"><h4><i data-lucide="shield-alert"></i>Grupo no autorizado</h4><p>Un documento Confidencial no debería compartirse por enlace con un grupo de más de 5 personas fuera del área owner.</p><button class="btn btn--danger" type="button" id="revoke"><i data-lucide="link-2-off"></i>Retirar acceso</button></div></div>` },
+  ];
+
+  const LOG = [
+    ['06 oct · 06:40', 'Raúl Delgado compartió un enlace de lectura con Marketing España'],
+    ['06 oct · 02:10', 'Lucía Sanz consultó el documento (primer acceso de la noche)'],
+    ['19 sep · 09:42', 'Fernando Ibáñez aprobó y publicó la versión 3'],
+    ['19 sep · 09:30', 'Lucía Sanz concedió lectura a Gabinete'],
+    ['18 sep · 17:05', 'Lucía Sanz editó el resumen ejecutivo'],
+    ['14 sep · 12:22', 'Marketing España descargó la versión 2'],
+    ['12 sep · 16:48', 'Raúl Delgado guardó la versión 2'],
+    ['5 sep · 13:10', 'Lucía Sanz guardó la versión 1'],
+    ['2 sep · 11:40', 'Laura Pérez validó la clasificación Confidencial'],
+    ['2 sep · 10:12', 'Lucía Sanz creó el documento'],
+  ];
+
+  let sel = 5, view = 'story';
+
+  function result() {
+    out.innerHTML = `
+      <section aria-labelledby="doc-title">
+        <div class="doc">
+          <span class="doc__ico"><i data-lucide="file-lock-2"></i></span>
+          <div><h2 id="doc-title">Resultados Q2 2026 · Grupo</h2>
+            <p class="doc__meta"><span class="status status--lock"><i data-lucide="lock"></i>Confidencial</span>Owner: Lucía Sanz · Finanzas · versión 3 publicada · SharePoint / Finanzas / Cierres</p></div>
+          <div class="doc__act"><a class="btn btn--ghost" href="#" data-soon="Exportar la narrativa en PDF llegará en la siguiente fase del prototipo"><i data-lucide="file-down"></i>Exportar narrativa</a></div>
+        </div>
+        <div class="story">
+          <div class="chap anim" role="tablist" aria-label="Capítulos de la historia del documento">
+            ${CH.map((c, i) => `<button class="ch${c.warn ? ' is-warn' : ''}" role="tab" type="button" id="ch-${i}" aria-controls="detail" aria-selected="${i === sel}" tabindex="${i === sel ? 0 : -1}" style="--d:${i * 70}ms">
+              <span class="ch__line"><span class="ch__dot"></span><span class="ch__bar"></span></span>
+              <span class="ch__k">${i + 1} · ${c.k}</span><span class="ch__t">${c.t}</span>
+              <span class="ch__s">${c.warn ? '<i data-lucide="triangle-alert"></i>' + c.warn : c.s}</span></button>`).join('')}
+          </div>
+          <div class="detail" id="detail" role="tabpanel"></div>
+        </div>
+      </section>
+      <div class="viewbar"><h2>Historial completo</h2>
+        <div class="seg" role="group" aria-label="Vista del historial"><button type="button" aria-pressed="false" data-v="log"><i data-lucide="list"></i>Mostrar los 10 eventos</button></div></div>
+      <table class="tbl log" id="log" hidden><thead><tr><th>Cuándo</th><th>Qué pasó</th></tr></thead><tbody>${LOG.map(l => `<tr><td>${l[0]}</td><td>${l[1]}</td></tr>`).join('')}</tbody></table>`;
+    const tabs = [...out.querySelectorAll('.ch')];
+    tabs.forEach((b, i) => {
+      b.addEventListener('click', () => pick(i));
+      b.addEventListener('keydown', e => {
+        if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { e.preventDefault(); pick((i + (e.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length, true); }
+      });
+    });
+    out.querySelector('[data-v="log"]').addEventListener('click', e => {
+      const b = e.currentTarget, on = b.getAttribute('aria-pressed') !== 'true';
+      b.setAttribute('aria-pressed', on); $('log').hidden = !on;
+      b.innerHTML = on ? '<i data-lucide="list"></i>Ocultar eventos' : '<i data-lucide="list"></i>Mostrar los 10 eventos'; draw();
+    });
+    pick(sel);
+  }
+  function pick(i, focus) {
+    sel = i;
+    out.querySelectorAll('.ch').forEach((t, j) => { t.setAttribute('aria-selected', j === i); t.tabIndex = j === i ? 0 : -1; });
+    if (focus) $('ch-' + i).focus();
+    $('detail').setAttribute('aria-labelledby', 'ch-' + i);
+    $('detail').innerHTML = `<div class="detail__in">${CH[i].detail()}</div>`;
+    draw();
+    const n = $('notify');
+    if (n) n.addEventListener('click', () => { n.disabled = true; n.innerHTML = '<i data-lucide="check"></i>Aviso enviado a Marketing España'; draw(); showToast('Marketing España recibirá el enlace a la versión 3'); });
+    const r = $('revoke');
+    if (r) r.addEventListener('click', askRevoke);
+  }
+  function askRevoke() {
+    $('perm-side').innerHTML = `<div class="card bad" role="alertdialog" aria-labelledby="rv-t"><h4 id="rv-t"><i data-lucide="link-2-off"></i>¿Retirar el acceso a Marketing España?</h4><p>Las 9 personas dejarán de ver el documento ahora mismo. Raúl Delgado recibirá un aviso con el motivo.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn--danger" type="button" id="rv-ok">Sí, retirar acceso</button><button class="btn btn--ghost" type="button" id="rv-no" style="height:36px;font-size:13px;margin-top:var(--s-3)">Cancelar</button></div></div>`;
+    draw(); $('rv-ok').focus();
+    $('rv-no').addEventListener('click', () => pick(5));
+    $('rv-ok').addEventListener('click', () => {
+      $('mkt-row').className = 'is-gone';
+      $('perm-side').innerHTML = `<div class="card ok" role="status"><h4><i data-lucide="circle-check"></i>Acceso retirado</h4><p>Marketing España ya no puede ver el documento. Registrado en el Audit Trail a las 08:32 · incidencia INC-2026-0413.</p></div>`;
+      CH[5].warn = null; CH[5].s = 'Acceso de Marketing retirado';
+      const c5 = $('ch-5'); c5.classList.remove('is-warn'); c5.querySelector('.ch__s').textContent = CH[5].s; draw();
+    });
+  }
+  function noResult(q) {
+    out.innerHTML = `<div class="empty"><h2>No encuentro «${q.replace(/[<>&"]/g, '')}»</h2><p>Revisa cómo está escrito o busca por otra pista: el nombre del owner, el área o una fecha.</p>
+      <div class="sugg"><span>Prueba con:</span><a class="chip" href="?q=Resultados%20Q2"><i data-lucide="file-lock-2"></i>Resultados Q2</a><a class="chip" href="?q=Luc%C3%ADa%20Sanz"><i data-lucide="user"></i>Lucía Sanz</a></div></div>`;
+    draw();
+  }
+  function intro() {
+    out.innerHTML = `<div class="empty"><h2>¿Qué historia quieres reconstruir?</h2><p>Escribe un documento, una persona o una acción. La IA reúne todo el ciclo de vida en una narrativa: creación, cambios, versiones, fuentes, accesos y permisos.</p>
+      <div class="sugg"><span>Búsquedas recientes:</span><a class="chip" href="?q=Resultados%20Q2"><i data-lucide="file-lock-2"></i>Resultados Q2 2026 · Grupo</a><a class="chip" href="#" data-soon><i data-lucide="file-lock-2"></i>Plan Estratégico 2027 · Gabinete</a></div></div>`;
+    draw();
+  }
+  function run(q) {
+    const hint = $('hint');
+    hint.className = 'hint'; hint.innerHTML = '<i data-lucide="lightbulb"></i>Busca por nombre de documento, persona o acción. Por ejemplo: «Resultados Q2»';
+    out.innerHTML = `<div class="load" role="status"><p><i data-lucide="loader-circle" class="spin"></i>Reconstruyendo la historia de «${q.replace(/[<>&"]/g, '')}»…</p><div class="sk" style="width:60%"></div><div class="sk" style="width:90%"></div><div class="sk" style="width:75%"></div></div>`;
+    draw();
+    setTimeout(() => (/q2|resultados|luc[ií]a/i.test(q) ? result() : noResult(q)), reduceMotion ? 0 : 700);
+  }
+
+  $('form').addEventListener('submit', e => {
+    e.preventDefault();
+    const q = $('q').value.trim();
+    if (!q) {
+      const h = $('hint'); h.className = 'hint is-error';
+      h.innerHTML = '<i data-lucide="circle-alert"></i>Escribe qué quieres auditar. Por ejemplo: «Resultados Q2»'; draw(); $('q').focus(); return;
+    }
+    history.replaceState(null, '', '?q=' + encodeURIComponent(q));
+    run(q);
+  });
+
+  const q0 = new URLSearchParams(location.search).get('q');
+  if (q0) { $('q').value = q0; run(q0); } else intro();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SSoT · Revisar plantilla — Javier Martín</title>
+<link rel="stylesheet" href="assets/ssot.css">
+<style>
+.grid { display: grid; grid-template-columns: minmax(0, 1fr) 400px; gap: var(--s-6); align-items: start; }
+.side { position: sticky; top: var(--s-6); display: flex; flex-direction: column; gap: var(--s-4); }
+.lbl { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--grey-6); margin: 0 0 var(--s-2); }
+
+/* Template meta */
+.tmeta { display: flex; flex-wrap: wrap; gap: var(--s-2) var(--s-5); font-size: 13px; color: var(--grey-6); margin-bottom: var(--s-4); }
+.tmeta span { display: inline-flex; align-items: center; gap: 6px; }
+.tmeta svg { width: 14px; height: 14px; }
+
+/* Slides */
+.stage { background: var(--grey-2); border-radius: var(--r-card); padding: var(--s-6); }
+.slide { aspect-ratio: 16 / 9; width: 100%; border-radius: 6px; overflow: hidden; position: relative; box-shadow: var(--shadow-2); background: var(--grey-0); container-type: inline-size; }
+.slide__in { position: absolute; inset: 0; padding: 6cqw 7cqw; display: flex; flex-direction: column; }
+.s-cover { background: var(--blue); color: var(--grey-0); }
+.s-cover img { height: 4.2cqw; width: auto; align-self: flex-start; }
+.s-cover h3 { margin: auto 0 1.5cqw; font-size: 5.6cqw; font-weight: 500; line-height: 1.05; letter-spacing: -.02em; }
+.s-cover p { margin: 0; font-size: 1.8cqw; opacity: .85; }
+.s-head { font-size: 1.4cqw; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--blue); }
+.s-title { font-size: 3.6cqw; font-weight: 500; margin: 1cqw 0 3cqw; letter-spacing: -.01em; color: var(--grey-9); }
+.s-agenda ol { margin: 0; padding: 0; list-style: none; display: grid; gap: 1.6cqw; counter-reset: a; }
+.s-agenda li { counter-increment: a; display: flex; gap: 2cqw; align-items: baseline; font-size: 2.2cqw; color: var(--grey-8); border-bottom: 1px solid var(--grey-2); padding-bottom: 1.4cqw; }
+.s-agenda li::before { content: "0" counter(a); color: var(--blue); font-weight: 600; font-size: 1.8cqw; }
+.s-kpi .kpis-s { display: flex; gap: 3cqw; }
+.s-kpi .k { flex: 1; border-top: 0.5cqw solid var(--blue); padding-top: 1.6cqw; }
+.s-kpi .k b { display: block; font-size: 5cqw; font-weight: 600; letter-spacing: -.02em; color: var(--grey-9); }
+.s-kpi .k span { font-size: 1.6cqw; color: var(--grey-6); }
+.s-kpi .k.off { border-color: #FF6B00; }
+.s-kpi .k.off b { color: #FF6B00; }
+.s-kpi .bars { margin-top: auto; display: flex; gap: 1.2cqw; align-items: flex-end; height: 10cqw; }
+.s-kpi .bars i { flex: 1; background: var(--grey-2); border-radius: .4cqw .4cqw 0 0; }
+.s-kpi .bars i.hi { background: var(--blue); }
+.s-kpi .bars i.off { background: #FF6B00; }
+.slide.is-fixed .off { border-color: var(--blue) !important; color: var(--grey-9) !important; }
+.slide.is-fixed .k.off b { color: var(--grey-9) !important; }
+.slide.is-fixed .bars i.off { background: var(--blue) !important; }
+.s-close { background: var(--grey-9); color: var(--grey-0); }
+.s-close img { height: 4.2cqw; width: auto; align-self: flex-start; }
+.s-close h3 { margin: auto 0 1cqw; font-size: 4.4cqw; font-weight: 500; }
+.s-close p { margin: 0; font-size: 1.4cqw; color: var(--grey-3); }
+.flagpin { position: absolute; top: 2cqw; right: 2cqw; display: inline-flex; align-items: center; gap: 4px; background: var(--yellow-very-light); color: var(--yellow-very-dark); border: 1px solid #A7863E; font-size: 12px; font-weight: 600; padding: 3px 8px; border-radius: 999px; }
+.flagpin svg { width: 13px; height: 13px; }
+.slide.is-fixed .flagpin, .thumb .flagpin { display: none; }
+
+.thumbs { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--s-3); margin-top: var(--s-4); }
+.thumb { border: 2px solid transparent; border-radius: 8px; padding: 0; background: none; text-align: left; }
+.thumb .slide { box-shadow: var(--shadow-1); pointer-events: none; }
+.thumb[aria-selected="true"] { border-color: var(--blue); }
+.thumb > span { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--grey-6); margin-top: 4px; padding: 0 2px; }
+.thumb > span svg { width: 13px; height: 13px; color: var(--yellow-very-dark); }
+
+/* Checks */
+.checks { list-style: none; margin: 0; padding: 0; }
+.chk { display: flex; gap: var(--s-3); align-items: flex-start; padding: 10px 0; border-bottom: 1px solid var(--grey-1); }
+.chk:last-child { border-bottom: 0; }
+.chk > svg { width: 20px; height: 20px; flex-shrink: 0; margin-top: 1px; color: var(--turquoise-very-dark); }
+.chk p { margin: 0; font-weight: 500; font-size: 14px; }
+.chk small { display: block; font-size: 12px; color: var(--grey-6); font-weight: 400; }
+.chk--warn { background: var(--yellow-very-light); margin: 0 calc(var(--s-5) * -1); padding: var(--s-3) var(--s-5); }
+.chk--warn > svg { color: var(--yellow-very-dark); }
+.chk--warn small { color: var(--yellow-very-dark); }
+.chk__act { display: flex; gap: var(--s-2); margin-top: var(--s-2); }
+.chk__act .btn { height: 36px; font-size: 13px; padding: 0 var(--s-3); }
+.swatch { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -1px; margin: 0 2px; }
+.sum { display: flex; align-items: center; gap: var(--s-3); padding: var(--s-3) var(--s-4); border-radius: var(--r-ctrl); font-weight: 600; font-size: 14px; margin-bottom: var(--s-3); }
+.sum svg { width: 20px; height: 20px; }
+.sum small { display: block; font-weight: 400; font-size: 12px; }
+.sum--warn { background: var(--yellow-very-light); color: var(--yellow-very-dark); }
+.sum--ok { background: var(--turquoise-very-light); color: var(--turquoise-very-dark); }
+
+/* Publish */
+.opt { display: flex; gap: var(--s-3); align-items: flex-start; padding: var(--s-2) 0; cursor: pointer; font-size: 14px; }
+.opt input { width: 20px; height: 20px; accent-color: var(--blue); margin: 0; flex-shrink: 0; }
+.opt small { display: block; color: var(--grey-6); font-size: 12px; }
+.pubbtns { display: flex; flex-direction: column; gap: var(--s-2); margin-top: var(--s-4); }
+.pubbtns .btn { width: 100%; }
+.btn:disabled { background: var(--grey-2); color: var(--grey-6); cursor: not-allowed; transform: none; }
+.note { margin: var(--s-2) 0 0; font-size: 13px; color: var(--grey-6); display: flex; gap: 6px; }
+.note svg { width: 16px; height: 16px; flex-shrink: 0; margin-top: 1px; }
+.note.is-warn { color: var(--yellow-very-dark); font-weight: 500; }
+
+/* Progress + success */
+.prog { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s-3); }
+.prog li { display: flex; gap: var(--s-3); align-items: center; font-size: 14px; color: var(--grey-5); }
+.prog li.is-active { color: var(--grey-9); font-weight: 500; }
+.prog li.is-done { color: var(--grey-7); }
+.prog .dot { width: 20px; height: 20px; display: grid; place-items: center; }
+.prog .dot svg { width: 18px; height: 18px; }
+.prog li.is-active .dot { color: var(--blue); }
+.prog li.is-done .dot { color: var(--turquoise-very-dark); }
+.okhead { display: flex; gap: var(--s-3); align-items: center; }
+.okhead span { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: var(--turquoise-very-light); color: var(--turquoise-very-dark); flex-shrink: 0; animation: pop .35s var(--ease-out) both; }
+.okhead h2 { margin: 0; font-size: 18px; font-weight: 600; }
+.okhead small { display: block; font-size: 13px; color: var(--grey-6); font-weight: 400; }
+.insight { background: var(--grey-9); color: var(--grey-0); border-radius: var(--r-card); padding: var(--s-5); position: relative; overflow: hidden; animation: rise .4s var(--ease-out) both; }
+.insight::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 4px; background: var(--blue); }
+.insight__tag { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--grey-3); display: flex; gap: 6px; align-items: center; }
+.insight__tag svg { width: 14px; height: 14px; color: var(--blue); }
+.insight__num { font-size: 48px; font-weight: 600; letter-spacing: -.03em; line-height: 1; margin: var(--s-3) 0 var(--s-2); }
+.insight p { margin: 0 0 var(--s-4); font-size: 15px; color: var(--grey-1); }
+.insight .btn { width: 100%; }
+.stamp { position: absolute; left: var(--s-6); bottom: var(--s-6); display: none; align-items: center; gap: 6px; background: var(--turquoise-very-dark); color: var(--grey-0); font-size: 13px; font-weight: 600; padding: 6px 12px; border-radius: 999px; box-shadow: var(--shadow-2); }
+.stamp svg { width: 15px; height: 15px; }
+.stage { position: relative; }
+.stage.is-published .stamp { display: inline-flex; animation: pop .35s var(--ease-out) both; }
+
+@media (max-width: 1180px) { .grid { grid-template-columns: 1fr; } .side { position: static; } }
+</style>
+</head>
+<body data-page="inicio">
+<div class="app">
+  <nav class="nav" id="nav" aria-label="Principal"></nav>
+
+  <main class="main" style="max-width:1440px">
+    <nav class="crumbs" aria-label="Ruta"><a href="javier.html">Inicio</a><i data-lucide="chevron-right"></i><span>Plantillas</span><i data-lucide="chevron-right"></i><span>Resultados semestrales</span></nav>
+    <div class="ph">
+      <div>
+        <span class="ph__kicker" id="kicker">Plantilla pendiente de validar</span>
+        <h1>Resultados semestrales 2026</h1>
+        <div class="tmeta" style="margin:8px 0 0">
+          <span><i data-lucide="presentation"></i>PowerPoint · 4 diapositivas</span>
+          <span><i data-lucide="user"></i>Subida por María Jiménez · Comunicación</span>
+          <span><i data-lucide="clock"></i>Hoy, 08:52</span>
+          <span><i data-lucide="history"></i>Sustituye a la v1 (2025)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <!-- Preview -->
+      <section aria-label="Vista previa de la plantilla">
+        <div class="stage" id="stage">
+          <div class="slide" id="big"></div>
+          <span class="stamp"><i data-lucide="badge-check"></i>Publicada · v2</span>
+        </div>
+        <div class="thumbs" role="tablist" aria-label="Diapositivas" id="thumbs"></div>
+      </section>
+
+      <!-- Checks + publish -->
+      <aside class="side">
+        <section class="panel" id="checks-panel" aria-labelledby="chk-title">
+          <div class="panel__head"><h2 id="chk-title"><i data-lucide="scan-search"></i>Revisión automática</h2><span class="panel__meta">Guía de identidad 2026</span></div>
+          <div class="sum sum--warn" id="sum"><i data-lucide="triangle-alert"></i><span>1 incidencia de 6 comprobaciones<small>Corrígela para poder publicar</small></span></div>
+          <ul class="checks">
+            <li class="chk"><i data-lucide="circle-check"></i><div><p>Logotipo vigente</p><small>Versión 2026 en portada y cierre</small></div></li>
+            <li class="chk"><i data-lucide="circle-check"></i><div><p>Tipografía Telefonica Sans</p><small>Todos los textos</small></div></li>
+            <li class="chk chk--warn" id="chk-color"><i data-lucide="triangle-alert"></i><div><p>Color fuera de la paleta</p><small>Diapositiva 3 usa <span class="swatch" style="background:#FF6B00"></span>#FF6B00. La guía pide azul <span class="swatch" style="background:#0066FF"></span>#0066FF para datos destacados.</small>
+              <div class="chk__act"><button class="btn btn--primary" type="button" id="fix"><i data-lucide="wand-sparkles"></i>Sustituir por azul</button><button class="btn btn--ghost" type="button" id="see3">Ver diapositiva</button></div></div></li>
+            <li class="chk"><i data-lucide="circle-check"></i><div><p>Tono de los textos de ejemplo</p><small>Institucional · Guía de tono v3.2</small></div></li>
+            <li class="chk"><i data-lucide="circle-check"></i><div><p>Pie legal y clasificación</p><small>«Uso interno» en todas las diapositivas</small></div></li>
+            <li class="chk"><i data-lucide="circle-check"></i><div><p>Contraste accesible</p><small>Todos los textos cumplen AA</small></div></li>
+          </ul>
+        </section>
+
+        <section class="panel" id="pub-panel" aria-labelledby="pub-title">
+          <div class="panel__head"><h2 id="pub-title"><i data-lucide="upload"></i>Publicar</h2><span class="panel__meta">como v2</span></div>
+          <label class="opt"><input type="checkbox" checked id="o-arch"><span>Archivar la v1<small>12 documentos la usan: avisaremos a sus autores</small></span></label>
+          <label class="opt"><input type="checkbox" checked id="o-agent"><span>Añadir al conocimiento del agente<small>El agente SSoT la usará al generar resultados semestrales</small></span></label>
+          <div class="pubbtns">
+            <button class="btn btn--primary" type="button" id="publish" disabled><i data-lucide="badge-check"></i>Publicar para toda la organización</button>
+            <button class="btn btn--ghost" type="button" data-soon="Se devolverá a María con tus comentarios (próximamente)"><i data-lucide="undo-2"></i>Devolver a Comunicación</button>
+          </div>
+          <p class="note is-warn" id="pub-note"><i data-lucide="lock"></i>Corrige la incidencia de color para publicar.</p>
+        </section>
+
+        <section class="panel" id="prog-panel" hidden aria-live="polite">
+          <div class="panel__head"><h2><i data-lucide="loader-circle" class="spin"></i>Publicando</h2></div>
+          <ol class="prog" id="prog">
+            <li><span class="dot"><i data-lucide="circle"></i></span>Publicando plantilla v2</li>
+            <li><span class="dot"><i data-lucide="circle"></i></span>Archivando la v1</li>
+            <li><span class="dot"><i data-lucide="circle"></i></span>Avisando a 12 autores</li>
+            <li><span class="dot"><i data-lucide="circle"></i></span>Actualizando el conocimiento del agente</li>
+          </ol>
+        </section>
+
+        <section class="panel" id="ok-panel" hidden aria-live="polite">
+          <div class="okhead"><span><i data-lucide="check"></i></span><h2>Plantilla publicada · v2<small>Disponible para toda la organización. El agente ya la usa.</small></h2></div>
+        </section>
+
+        <section class="insight" id="insight" hidden aria-labelledby="ins-title">
+          <span class="insight__tag" id="ins-title"><i data-lucide="sparkles"></i>Insight del agente · últimas 2 semanas</span>
+          <div class="insight__num num">8%</div>
+          <p>de las notas de prensa generadas por IA han utilizado un tono más promocional del recomendado para comunicación institucional.</p>
+          <a class="btn btn--primary" href="javier-tono.html?pub=1"><i data-lucide="message-square-quote"></i>Abrir Tone of Voice</a>
+        </section>
+      </aside>
+    </div>
+  </main>
+</div>
+
+<script src="assets/javier.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script>
+  const slides = [
+    { name: 'Portada', html: `<div class="slide__in s-cover"><img src="assets/logo-white-horizontal.png" alt="Telefónica"><h3>Resultados del primer semestre 2026</h3><p>Madrid · 28 de julio de 2026 · Uso interno</p></div>` },
+    { name: 'Agenda', html: `<div class="slide__in s-agenda"><span class="s-head">Agenda</span><div class="s-title">Lo que veremos hoy</div><ol><li>Principales magnitudes</li><li>Evolución por mercado</li><li>Red y despliegue</li><li>Próximos pasos</li></ol></div>` },
+    { name: 'Magnitudes', flag: true, html: `<div class="slide__in s-kpi"><span class="s-head">Principales magnitudes</span><div class="s-title">Un semestre de crecimiento sostenido</div><div class="kpis-s"><div class="k"><b>[XX] M€</b><span>Ingresos</span></div><div class="k off"><b>[+X] %</b><span>Crecimiento fibra</span></div><div class="k"><b>[XX] M</b><span>Accesos FTTH</span></div></div><div class="bars"><i style="height:40%"></i><i style="height:55%"></i><i style="height:62%"></i><i class="off" style="height:80%"></i><i class="hi" style="height:92%"></i></div></div><span class="flagpin"><i data-lucide="triangle-alert"></i>Color fuera de paleta</span>` },
+    { name: 'Cierre', html: `<div class="slide__in s-close"><img src="assets/logo-white-horizontal.png" alt="Telefónica"><h3>Gracias</h3><p>Telefónica, S.A. · Uso interno · Plantilla v2</p></div>` },
+  ];
+  let current = 0, fixed = false;
+  const big = document.getElementById('big'), thumbs = document.getElementById('thumbs');
+  thumbs.innerHTML = slides.map((s, i) => `<button class="thumb" role="tab" type="button" data-i="${i}" aria-selected="${i === 0}"><div class="slide">${s.html}</div><span>${s.flag ? '<i data-lucide="triangle-alert" class="flagicon"></i>' : ''}${i + 1} · ${s.name}</span></button>`).join('');
+  function show(i) {
+    current = i; big.innerHTML = slides[i].html;
+    big.classList.toggle('is-fixed', fixed); thumbs.querySelectorAll('.slide').forEach(s => s.classList.toggle('is-fixed', fixed));
+    thumbs.querySelectorAll('.thumb').forEach(t => t.setAttribute('aria-selected', +t.dataset.i === i));
+    draw();
+  }
+  thumbs.addEventListener('click', e => { const t = e.target.closest('.thumb'); if (t) show(+t.dataset.i); });
+  document.getElementById('see3').addEventListener('click', () => show(2));
+
+  document.getElementById('fix').addEventListener('click', () => {
+    fixed = true; show(2);
+    const c = document.getElementById('chk-color');
+    c.className = 'chk';
+    c.innerHTML = '<i data-lucide="circle-check"></i><div><p>Color de la paleta</p><small>Diapositiva 3 corregida: #FF6B00 → azul #0066FF</small></div>';
+    const sum = document.getElementById('sum'); sum.className = 'sum sum--ok';
+    sum.innerHTML = '<i data-lucide="badge-check"></i><span>6 de 6 comprobaciones superadas<small>Cumple la Guía de identidad 2026</small></span>';
+    thumbs.querySelectorAll('.flagicon').forEach(f => f.remove());
+    document.getElementById('publish').disabled = false;
+    const n = document.getElementById('pub-note'); n.className = 'note'; n.innerHTML = '<i data-lucide="info"></i>Podrás volver a la v1 desde el historial de versiones.';
+    draw(); showToast('Color sustituido en la diapositiva 3');
+  });
+
+  document.getElementById('publish').addEventListener('click', () => {
+    const arch = document.getElementById('o-arch').checked, agent = document.getElementById('o-agent').checked;
+    document.getElementById('checks-panel').hidden = true; document.getElementById('pub-panel').hidden = true;
+    const pp = document.getElementById('prog-panel'); pp.hidden = false;
+    const li = [...document.querySelectorAll('#prog li')];
+    if (!arch) { li[1].remove(); li[2].remove(); }
+    if (!agent) li[3].remove();
+    const steps = [...document.querySelectorAll('#prog li')];
+    const set = (el, s) => { el.className = s; el.querySelector('.dot').innerHTML = s === 'is-done' ? '<i data-lucide="circle-check"></i>' : '<i data-lucide="loader-circle" class="spin"></i>'; };
+    const D = reduceMotion ? 0 : 650;
+    steps.forEach((el, i) => setTimeout(() => { if (i) set(steps[i - 1], 'is-done'); set(el, 'is-active'); draw(); }, i * D));
+    setTimeout(() => {
+      pp.hidden = true;
+      document.getElementById('ok-panel').hidden = false;
+      document.getElementById('stage').classList.add('is-published');
+      document.getElementById('kicker').textContent = 'Plantilla publicada · v2';
+      setTimeout(() => { document.getElementById('insight').hidden = false; draw(); }, reduceMotion ? 0 : 600);
+      draw();
+    }, steps.length * D);
+  });
+
+  show(0);
+</script>
+</body>
+</html>

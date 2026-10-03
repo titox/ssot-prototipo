@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SSoT · Secuencia de la alerta — Carlos Ruiz</title>
+<link rel="stylesheet" href="assets/ssot.css">
+<style>
+.ws { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: var(--s-6); align-items: start; }
+.stack { display: grid; gap: var(--s-5); }
+.sticky { position: sticky; top: var(--s-6); display: grid; gap: var(--s-5); }
+.ph__kicker { display: inline-flex; align-items: center; gap: 6px; }
+.ph__kicker .status { text-transform: none; letter-spacing: 0; }
+
+/* Summary strip */
+.sum { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--s-4); }
+.sum div { background: var(--grey-0); border: 1px solid var(--grey-2); border-radius: var(--r-card); padding: var(--s-4) var(--s-5); box-shadow: var(--shadow-1); }
+.sum span { font-size: 14px; color: var(--grey-7); font-weight: 500; display: flex; gap: 6px; align-items: center; }
+.sum span svg { width: 16px; height: 16px; color: var(--blue); }
+.sum b { display: block; font-size: 32px; font-weight: 600; letter-spacing: -.03em; line-height: 1.1; margin-top: var(--s-2); }
+.sum small { display: block; font-size: 12px; color: var(--grey-6); margin-top: 2px; }
+.sum .ok b { color: var(--turquoise-very-dark); }
+
+/* Hourly chart */
+.legend { display: flex; gap: var(--s-4); font-size: 13px; color: var(--grey-7); }
+.legend span { display: inline-flex; gap: 6px; align-items: center; }
+.legend i { width: 12px; height: 12px; border-radius: 2px; background: var(--blue); }
+.legend i.base { background: none; border-top: 2px dashed var(--grey-6); height: 0; border-radius: 0; }
+.legend i.hot { background: #A7863E; }
+.chart { display: grid; grid-template-columns: repeat(8, 1fr); gap: var(--s-3); align-items: end; height: 200px; padding: var(--s-4) 0 0; position: relative; border-bottom: 1px solid var(--grey-2); }
+.col { position: relative; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; cursor: default; }
+.col i { display: block; width: 100%; max-width: 56px; background: var(--blue); border-radius: 4px 4px 0 0; transform-origin: bottom; animation: growy .6s var(--ease-out) both; animation-delay: var(--d); }
+.col.hot i { background: #A7863E; }
+.col b { font-size: 13px; font-weight: 600; margin-bottom: 4px; animation: fadein .3s ease-out both; animation-delay: calc(var(--d) + 300ms); }
+.col.hot b { color: var(--yellow-very-dark); }
+.col .base { position: absolute; left: -6px; right: -6px; border-top: 2px dashed var(--grey-6); }
+.hours { display: grid; grid-template-columns: repeat(8, 1fr); gap: var(--s-3); font-size: 12px; color: var(--grey-6); text-align: center; padding-top: 6px; }
+.chart-note { margin: var(--s-3) 0 0; font-size: 13px; color: var(--grey-7); display: flex; gap: 6px; align-items: center; }
+.chart-note svg { width: 16px; height: 16px; color: var(--yellow-very-dark); }
+@keyframes growy { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+@keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+
+/* Steps */
+.steps { list-style: none; margin: 0; padding: 0; position: relative; }
+.steps::before { content: ""; position: absolute; left: 75px; top: 10px; bottom: 10px; width: 2px; background: var(--grey-2); }
+.steps li { display: grid; grid-template-columns: 60px 32px 1fr; align-items: start; padding: var(--s-3) 0; }
+.steps time { font-size: 14px; font-weight: 600; text-align: right; padding-top: 1px; }
+.steps .dot { justify-self: center; width: 12px; height: 12px; margin-top: 5px; border-radius: 50%; background: var(--grey-0); border: 2px solid var(--blue); position: relative; z-index: 1; }
+.steps p { margin: 0; font-size: 15px; line-height: 1.45; }
+.steps p strong { font-weight: 600; }
+.steps small { display: block; font-size: 13px; color: var(--grey-6); margin-top: 2px; }
+.steps .ai .dot { background: var(--blue); }
+
+/* Users table */
+.filters { display: flex; flex-wrap: wrap; gap: var(--s-2); margin-bottom: var(--s-3); }
+.fchip { height: 40px; padding: 0 var(--s-4); border-radius: var(--r-pill); border: 1px solid var(--grey-2); background: var(--grey-0); font-weight: 500; font-size: 14px; color: var(--grey-8); display: inline-flex; align-items: center; gap: 6px; }
+.fchip:hover { border-color: var(--blue); color: var(--blue); }
+.fchip[aria-pressed="true"] { background: var(--blue); border-color: var(--blue); color: var(--grey-0); }
+.fchip span { font-size: 12px; opacity: .8; }
+.tbl { width: 100%; border-collapse: collapse; font-size: 14px; }
+.tbl th { text-align: left; font-size: 12px; font-weight: 600; color: var(--grey-6); padding: 0 var(--s-3) var(--s-2); border-bottom: 1px solid var(--grey-2); }
+.tbl td { height: 52px; padding: 0 var(--s-3); border-bottom: 1px solid var(--grey-1); }
+.tbl tr:hover td { background: var(--grey-1); }
+.tbl .r { text-align: right; }
+.tbl td small { display: block; font-size: 12px; color: var(--grey-6); }
+.who { display: flex; align-items: center; gap: var(--s-3); }
+.who .avatar { width: 32px; height: 32px; font-size: 12px; }
+.tbl-foot { display: flex; justify-content: space-between; align-items: center; margin-top: var(--s-3); font-size: 13px; color: var(--grey-6); }
+
+/* AI usage */
+.gen-list { list-style: none; margin: 0; padding: 0; }
+.gen-list li { display: grid; grid-template-columns: 36px 1fr auto; gap: var(--s-3); align-items: center; min-height: 56px; border-top: 1px solid var(--grey-1); }
+.gen-list li:first-child { border-top: 0; }
+.gen-list .ico { width: 36px; height: 36px; border-radius: var(--r-ctrl); background: var(--blue-tint); color: var(--blue); display: grid; place-items: center; }
+.gen-list .ico svg { width: 18px; height: 18px; }
+.gen-list p { margin: 0; font-weight: 500; font-size: 14px; }
+.gen-list small { display: block; font-size: 12px; color: var(--grey-6); font-weight: 400; }
+
+/* Aside */
+.ai-box { background: var(--grey-9); color: var(--grey-0); border-radius: var(--r-card); padding: var(--s-5); position: relative; overflow: hidden; }
+.ai-box::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 4px; background: var(--blue); }
+.ai-box .tag { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--grey-3); display: flex; gap: 6px; align-items: center; margin-bottom: var(--s-2); }
+.ai-box .tag svg { width: 16px; height: 16px; color: var(--blue); }
+.ai-box p { margin: 0; font-size: 15px; line-height: 1.5; color: var(--grey-1); }
+.ai-box p strong { color: var(--grey-0); font-weight: 600; }
+.ai-box ul { margin: var(--s-3) 0 0; padding: 0; list-style: none; display: grid; gap: 6px; font-size: 13px; color: var(--grey-2); }
+.ai-box li { display: flex; gap: var(--s-2); align-items: center; }
+.ai-box li svg { width: 15px; height: 15px; color: var(--turquoise-very-light); }
+
+.close h2 { margin: 0 0 var(--s-1); font-size: 18px; font-weight: 600; }
+.close > p { margin: 0 0 var(--s-4); font-size: 13px; color: var(--grey-6); }
+.close fieldset { border: 0; margin: 0 0 var(--s-4); padding: 0; display: grid; gap: var(--s-2); }
+.close legend { font-size: 14px; font-weight: 600; margin-bottom: var(--s-2); }
+.ropt { display: grid; grid-template-columns: 20px 1fr; gap: var(--s-3); padding: var(--s-3) var(--s-4); border: 1.5px solid var(--grey-2); border-radius: var(--r-ctrl); cursor: pointer; transition: border-color .15s; }
+.ropt:hover { border-color: var(--grey-3); }
+.ropt input { width: 18px; height: 18px; margin: 2px 0 0; accent-color: var(--blue); }
+.ropt:has(input:checked) { border-color: var(--blue); background: var(--blue-tint); }
+.ropt strong { display: block; font-size: 14px; font-weight: 600; }
+.ropt small { display: block; font-size: 12px; color: var(--grey-6); }
+.ropt.esc:has(input:checked) { border-color: var(--coral-dark); background: var(--coral-very-light); }
+.close label.f { display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+.close label.f span { font-weight: 400; color: var(--grey-6); }
+.close textarea { width: 100%; min-height: 84px; border: 1.5px solid var(--grey-3); border-radius: var(--r-ctrl); padding: var(--s-3); font-size: 14px; resize: vertical; }
+.close textarea:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 4px var(--blue-tint); }
+.close .btn { width: 100%; margin-top: var(--s-4); }
+.close .note { display: flex; gap: 6px; align-items: flex-start; margin: var(--s-3) 0 0; font-size: 12px; color: var(--grey-6); }
+.close .note svg { width: 14px; height: 14px; flex-shrink: 0; margin-top: 1px; }
+.btn--danger { background: var(--coral-dark); color: var(--grey-0); }
+.btn--danger:hover { background: #6B302A; }
+.esc-confirm { margin-top: var(--s-3); padding: var(--s-4); border-radius: var(--r-ctrl); background: var(--coral-very-light); border: 1.5px solid var(--coral-dark); font-size: 13px; color: var(--grey-9); animation: rise .25s var(--ease-out) both; }
+.esc-confirm p { margin: 0 0 var(--s-3); }
+.esc-confirm .row2 { display: flex; gap: var(--s-2); }
+.esc-confirm .btn { margin-top: 0; width: auto; flex: 1; }
+
+@media (max-width: 1180px) { .ws { grid-template-columns: 1fr; } .sticky { position: static; } .sum { grid-template-columns: repeat(2, 1fr); } }
+</style>
+</head>
+<body data-page="alertas">
+<div class="app">
+  <nav class="nav" id="nav" aria-label="Principal"></nav>
+
+  <main class="main">
+    <nav class="crumbs" aria-label="Ruta"><a href="carlos.html">Trust Center</a><i data-lucide="chevron-right"></i><span>Alertas</span><i data-lucide="chevron-right"></i><span aria-current="page">Pico de accesos confidenciales</span></nav>
+    <div class="ph">
+      <div>
+        <span class="ph__kicker">Alerta ALR-2026-0187 · <span class="status status--warn"><i data-lucide="circle-alert"></i>Prioridad media</span> · detectada a las 04:40</span>
+        <h1>Pico de accesos a documentación Confidencial</h1>
+        <p>La IA ha reconstruido toda la secuencia de esta noche. Revísala y cierra la alerta indicando el motivo.</p>
+      </div>
+      <div class="ph__actions">
+        <a class="btn btn--ghost" href="#" data-soon="Exportar evidencia: llegará en la siguiente fase del prototipo"><i data-lucide="file-down"></i>Exportar evidencia</a>
+      </div>
+    </div>
+
+    <div class="ws">
+      <div class="stack">
+        <section class="sum" aria-label="Resumen">
+          <div><span><i data-lucide="file-lock-2"></i>Documentos</span><b class="num">112</b><small>94 de Finanzas · 18 de Gabinete</small></div>
+          <div><span><i data-lucide="users"></i>Usuarios</span><b class="num">18</b><small>De 3 áreas</small></div>
+          <div class="ok"><span><i data-lucide="shield-check"></i>Autorizados</span><b class="num">18/18</b><small>Con los permisos de ese momento</small></div>
+          <div><span><i data-lucide="bot"></i>Usados por IA</span><b class="num">6</b><small>En 3 informes generados</small></div>
+        </section>
+
+        <section class="panel" aria-labelledby="ch-title">
+          <div class="panel__head">
+            <h2 id="ch-title"><i data-lucide="chart-column"></i>Accesos a documentos Confidencial por hora</h2>
+            <span class="panel__meta">00:00–08:00 de hoy</span>
+          </div>
+          <div class="legend" aria-hidden="true"><span><i></i>Esta noche</span><span><i class="hot"></i>Fuera de lo normal</span><span><i class="base"></i>Media 4 semanas</span></div>
+          <div class="chart" id="chart" role="img" aria-label="Accesos por hora entre las 00:00 y las 08:00. Entre las 02:00 y las 05:00 se triplica la media."></div>
+          <div class="hours" aria-hidden="true"><span>00 h</span><span>01 h</span><span>02 h</span><span>03 h</span><span>04 h</span><span>05 h</span><span>06 h</span><span>07 h</span></div>
+          <p class="chart-note"><i data-lucide="triangle-alert"></i>Entre las 02:00 y las 05:00 hubo 3 veces más accesos de lo habitual: 286 frente a una media de 92.</p>
+        </section>
+
+        <section class="panel" aria-labelledby="st-title">
+          <div class="panel__head"><h2 id="st-title"><i data-lucide="list-tree"></i>Secuencia reconstruida</h2><span class="panel__meta">Generada por la IA a partir del Audit Trail</span></div>
+          <ol class="steps">
+            <li><time>02:10</time><span class="dot"></span><div><p><strong>Lucía Sanz</strong> (Finanzas) abre «Resultados Q2 2026 · Grupo».</p><small>Primer acceso de la noche · permiso de edición · VPN corporativa, Madrid</small></div></li>
+            <li><time>02:14</time><span class="dot"></span><div><p><strong>12 personas de Finanzas</strong> consultan 94 documentos de cierre trimestral.</p><small>Previsión 2027, conciliaciones, informes de filiales · sin descargas externas</small></div></li>
+            <li><time>03:05</time><span class="dot"></span><div><p><strong>4 personas de Gabinete</strong> consultan «Previsión 2027» y 17 documentos relacionados.</p><small>Permiso de lectura · preparación del Consejo del 8 de octubre</small></div></li>
+            <li class="ai"><time>03:40</time><span class="dot"></span><div><p>La IA usa <strong>6 de estos documentos</strong> para generar 3 informes.</p><small>Todos los informes citan sus fuentes · grounding 100 %</small></div></li>
+            <li><time>04:20</time><span class="dot"></span><div><p><strong>2 personas de Auditoría interna</strong> revisan los informes generados.</p><small>Permiso de lectura</small></div></li>
+            <li><time>04:35</time><span class="dot"></span><div><p>Último acceso. La actividad vuelve a valores normales.</p><small>La alerta se generó a las 04:40</small></div></li>
+          </ol>
+        </section>
+
+        <section class="panel" aria-labelledby="us-title">
+          <div class="panel__head"><h2 id="us-title"><i data-lucide="users"></i>Quién accedió y con qué permisos</h2><span class="panel__meta" id="us-meta">18 usuarios</span></div>
+          <div class="filters" role="group" aria-label="Filtrar por área" id="filters"></div>
+          <table class="tbl">
+            <thead><tr><th>Usuario</th><th>Área</th><th class="r">Documentos</th><th>Permiso en ese momento</th><th>Estado</th></tr></thead>
+            <tbody id="users"></tbody>
+          </table>
+          <div class="tbl-foot"><span id="us-count"></span><button class="tbtn link" type="button" id="more" style="background:none;border:0">Ver los 18 usuarios</button></div>
+        </section>
+
+        <section class="panel" aria-labelledby="ai-title">
+          <div class="panel__head"><h2 id="ai-title"><i data-lucide="bot"></i>Qué generó la IA con esta información</h2></div>
+          <ul class="gen-list">
+            <li><span class="ico"><i data-lucide="file-text"></i></span><p>Resumen ejecutivo · Cierre Q2 para el Consejo<small>Lucía Sanz · 03:40 · 4 fuentes citadas</small></p><a class="link" href="carlos-audit.html?q=Resultados%20Q2">Ver historia</a></li>
+            <li><span class="ico"><i data-lucide="file-text"></i></span><p>Comparativa de márgenes por filial<small>Raúl Delgado · 03:52 · 3 fuentes citadas</small></p><a class="link" href="#" data-soon>Ver historia</a></li>
+            <li><span class="ico"><i data-lucide="file-text"></i></span><p>Nota interna · Previsión 2027 para Gabinete<small>Elena Prieto · 04:05 · 2 fuentes citadas</small></p><a class="link" href="#" data-soon>Ver historia</a></li>
+          </ul>
+        </section>
+      </div>
+
+      <aside class="sticky">
+        <section class="ai-box" aria-labelledby="ai-c">
+          <p class="tag" id="ai-c"><i data-lucide="sparkles"></i>Conclusión de la IA</p>
+          <p>El patrón coincide con el <strong>cierre trimestral</strong> de Finanzas. No he encontrado ningún indicio de riesgo.</p>
+          <ul>
+            <li><i data-lucide="check"></i>Todos los accesos estaban autorizados</li>
+            <li><i data-lucide="check"></i>Sin descargas ni envíos fuera de la red</li>
+            <li><i data-lucide="check"></i>Mismo patrón que el cierre de Q1 (2 de julio)</li>
+          </ul>
+        </section>
+
+        <section class="panel close" aria-labelledby="cl-title">
+          <h2 id="cl-title">Cerrar la alerta</h2>
+          <p>Quedará registrado en el Audit Trail con tu nombre y el motivo.</p>
+          <fieldset>
+            <legend>Motivo</legend>
+            <label class="ropt"><input type="radio" name="why" value="legit" checked><span><strong>Actividad legítima</strong><small>Cierre trimestral de Finanzas</small></span></label>
+            <label class="ropt"><input type="radio" name="why" value="ok"><span><strong>Revisado sin incidencias</strong><small>No requiere ninguna acción</small></span></label>
+            <label class="ropt esc"><input type="radio" name="why" value="esc"><span><strong>Escalar a Seguridad</strong><small>Abre una investigación formal</small></span></label>
+          </fieldset>
+          <label class="f" for="note">Nota <span>(opcional)</span></label>
+          <textarea id="note" placeholder="Por ejemplo: confirmado con la Dirección Financiera"></textarea>
+          <button class="btn btn--primary" type="button" id="cl-btn"><i data-lucide="check"></i>Cerrar alerta</button>
+          <div id="esc-slot"></div>
+          <p class="note"><i data-lucide="info"></i>Puedes reabrir la alerta en cualquier momento desde el Trust Center.</p>
+        </section>
+      </aside>
+    </div>
+  </main>
+</div>
+
+<script src="assets/carlos.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+
+  /* Chart */
+  const H = [{ v: 6, b: 8 }, { v: 4, b: 6 }, { v: 88, b: 28 }, { v: 104, b: 30 }, { v: 94, b: 34 }, { v: 12, b: 10 }, { v: 9, b: 12 }, { v: 31, b: 29 }];
+  const max = 120;
+  $('chart').innerHTML = H.map((h, i) => {
+    const hot = h.v > h.b * 2;
+    return `<div class="col${hot ? ' hot' : ''}" style="--d:${i * 60}ms" title="${String(i).padStart(2, '0')}:00 · ${h.v} accesos (media ${h.b})">
+      <b class="num">${h.v}</b><i style="height:${h.v / max * 100}%"></i>
+      <span class="base" style="bottom:${h.b / max * 100}%"></span></div>`;
+  }).join('');
+
+  /* Users */
+  const U = [
+    ['Lucía Sanz', 'Finanzas', 'Directora de Control de Gestión', 23, 'Edición'],
+    ['Raúl Delgado', 'Finanzas', 'Analista financiero', 18, 'Edición'],
+    ['Elena Prieto', 'Gabinete', 'Asesora de Presidencia', 11, 'Lectura'],
+    ['Marta Gil', 'Finanzas', 'Controller de filiales', 14, 'Lectura'],
+    ['Andrés Vidal', 'Auditoría interna', 'Auditor sénior', 6, 'Lectura'],
+    ['Sergio Navarro', 'Finanzas', 'Consolidación contable', 9, 'Lectura'],
+    ['Pilar Ortega', 'Finanzas', 'Tesorería', 7, 'Lectura'],
+    ['Diego Fuentes', 'Gabinete', 'Jefe de Gabinete adjunto', 4, 'Lectura'],
+    ['Clara Benítez', 'Finanzas', 'Planificación financiera', 6, 'Edición'],
+    ['Hugo Castillo', 'Finanzas', 'Analista de costes', 5, 'Lectura'],
+    ['Nuria Soler', 'Gabinete', 'Analista de Presidencia', 2, 'Lectura'],
+    ['Iván Moreno', 'Finanzas', 'Reporting regulatorio', 4, 'Lectura'],
+    ['Rocío Peña', 'Finanzas', 'Fiscalidad', 3, 'Lectura'],
+    ['Tomás Rey', 'Auditoría interna', 'Auditor', 3, 'Lectura'],
+    ['Lorena Díaz', 'Finanzas', 'Relación con inversores', 3, 'Lectura'],
+    ['Pablo Herrera', 'Finanzas', 'Control de gestión', 2, 'Lectura'],
+    ['Beatriz Lara', 'Gabinete', 'Secretaría técnica', 1, 'Lectura'],
+    ['Óscar Molina', 'Finanzas', 'Analista financiero', 2, 'Lectura'],
+  ];
+  const AREAS = ['Todas las áreas', 'Finanzas', 'Gabinete', 'Auditoría interna'];
+  let area = 'Todas las áreas', all = false;
+  $('filters').innerHTML = AREAS.map(a => {
+    const n = a === AREAS[0] ? U.length : U.filter(u => u[1] === a).length;
+    return `<button class="fchip" type="button" aria-pressed="${a === area}" data-a="${a}">${a} <span class="num">${n}</span></button>`;
+  }).join('');
+  const ini = n => n.split(' ').map(p => p[0]).join('').slice(0, 2);
+  function renderUsers() {
+    const rows = U.filter(u => area === AREAS[0] || u[1] === area);
+    const shown = all ? rows : rows.slice(0, 6);
+    $('users').innerHTML = shown.map((u, i) => `<tr><td><span class="who"><span class="avatar av-${(i % 3) + 2}" aria-hidden="true">${ini(u[0])}</span><span>${u[0]}<small>${u[2]}</small></span></span></td><td>${u[1]}</td><td class="r num">${u[3]}</td><td>${u[4]}</td><td><span class="status status--ok"><i data-lucide="check"></i>Autorizado</span></td></tr>`).join('');
+    $('us-count').textContent = `Mostrando ${shown.length} de ${rows.length}`;
+    $('more').hidden = rows.length <= 6 || all;
+    draw();
+  }
+  $('filters').addEventListener('click', e => {
+    const b = e.target.closest('.fchip'); if (!b) return;
+    area = b.dataset.a; all = false;
+    document.querySelectorAll('.fchip').forEach(x => x.setAttribute('aria-pressed', x === b));
+    renderUsers();
+  });
+  $('more').addEventListener('click', () => { all = true; renderUsers(); });
+  renderUsers();
+
+  /* Close */
+  const btn = $('cl-btn');
+  document.querySelectorAll('input[name="why"]').forEach(r => r.addEventListener('change', () => {
+    const esc = r.value === 'esc' && r.checked;
+    $('esc-slot').innerHTML = '';
+    btn.hidden = false;
+    btn.className = 'btn ' + (document.querySelector('input[name="why"]:checked').value === 'esc' ? 'btn--danger' : 'btn--primary');
+    btn.innerHTML = document.querySelector('input[name="why"]:checked').value === 'esc' ? '<i data-lucide="shield-alert"></i>Escalar a Seguridad' : '<i data-lucide="check"></i>Cerrar alerta';
+    draw();
+  }));
+  btn.addEventListener('click', () => {
+    const why = document.querySelector('input[name="why"]:checked').value;
+    if (why === 'esc') {
+      btn.hidden = true;
+      $('esc-slot').innerHTML = `<div class="esc-confirm" role="alertdialog" aria-labelledby="esc-t"><p id="esc-t"><strong>¿Escalar a Seguridad?</strong> Se abrirá una investigación formal y se notificará a los responsables de las 3 áreas.</p><div class="row2"><button class="btn btn--danger" type="button" id="esc-ok">Sí, escalar</button><button class="btn btn--ghost" type="button" id="esc-no">Cancelar</button></div></div>`;
+      $('esc-ok').focus();
+      $('esc-no').addEventListener('click', () => { $('esc-slot').innerHTML = ''; btn.hidden = false; btn.focus(); });
+      $('esc-ok').addEventListener('click', () => showToast('Escalado registrado. El flujo de investigación llegará en la siguiente fase del prototipo'));
+      return;
+    }
+    btn.disabled = true; btn.innerHTML = '<i data-lucide="loader-circle" class="spin"></i>Registrando en el Audit Trail…'; draw();
+    setTimeout(() => { location.href = 'carlos.html?done=1'; }, reduceMotion ? 200 : 1000);
+  });
+})();
+</script>
+</body>
+</html>

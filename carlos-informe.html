@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SSoT · Informe de auditoría — Carlos Ruiz</title>
+<link rel="stylesheet" href="assets/ssot.css">
+<style>
+.ws { display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: var(--s-6); align-items: start; }
+.sticky { position: sticky; top: var(--s-6); }
+.cfg h2 { margin: 0 0 var(--s-4); font-size: 18px; font-weight: 600; }
+.cfg fieldset { border: 0; padding: 0; margin: 0 0 var(--s-5); display: grid; gap: var(--s-2); }
+.cfg legend { font-size: 14px; font-weight: 600; margin-bottom: var(--s-2); }
+.ropt { display: grid; grid-template-columns: 20px 1fr; gap: var(--s-3); align-items: start; padding: var(--s-3) var(--s-4); border: 1.5px solid var(--grey-2); border-radius: var(--r-ctrl); cursor: pointer; min-height: 48px; }
+.ropt:hover { border-color: var(--grey-3); }
+.ropt input { width: 18px; height: 18px; margin: 2px 0 0; accent-color: var(--blue); }
+.ropt:has(input:checked) { border-color: var(--blue); background: var(--blue-tint); }
+.ropt strong { display: block; font-size: 14px; font-weight: 600; }
+.ropt small { display: block; font-size: 12px; color: var(--grey-6); }
+.chk { display: grid; grid-template-columns: 20px 1fr; gap: var(--s-3); align-items: center; min-height: 44px; font-size: 14px; cursor: pointer; border-radius: 6px; padding: 0 var(--s-2); }
+.chk:hover { background: var(--grey-1); }
+.chk input { width: 18px; height: 18px; margin: 0; accent-color: var(--blue); }
+.cfg .btn { width: 100%; }
+.cfg .err { margin: var(--s-2) 0 0; font-size: 13px; color: var(--coral-dark); font-weight: 500; display: flex; gap: 6px; align-items: center; }
+.cfg .err svg { width: 15px; height: 15px; }
+
+/* Empty/progress */
+.idle { padding: var(--s-10) var(--s-8); background: var(--grey-0); border: 1px dashed var(--grey-3); border-radius: var(--r-card); }
+.idle h2 { margin: 0 0 var(--s-2); font-size: 22px; font-weight: 600; }
+.idle p { margin: 0; color: var(--grey-7); max-width: 60ch; line-height: 1.5; }
+.idle ul { margin: var(--s-4) 0 0; padding-left: 18px; color: var(--grey-7); font-size: 14px; display: grid; gap: 4px; }
+.gen { display: block; margin-top: 0; }
+
+/* Report */
+.rep { background: var(--grey-0); border: 1px solid var(--grey-2); border-radius: var(--r-card); box-shadow: var(--shadow-1); overflow: hidden; animation: rise .35s var(--ease-out) both; }
+.rep__bar { display: flex; align-items: center; gap: var(--s-2); padding: var(--s-3) var(--s-5); border-bottom: 1px solid var(--grey-2); background: var(--grey-1); flex-wrap: wrap; }
+.rep__bar .ok { display: inline-flex; gap: 6px; align-items: center; font-size: 13px; font-weight: 600; color: var(--turquoise-very-dark); margin-right: auto; }
+.rep__bar .ok svg { width: 16px; height: 16px; }
+.rep__bar .btn { height: 40px; font-size: 14px; padding: 0 var(--s-4); }
+.page { padding: var(--s-10); }
+.page .status { white-space: nowrap; }
+.page__k { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--grey-6); }
+.page h1 { margin: var(--s-2) 0 var(--s-1); font-size: 30px; font-weight: 500; letter-spacing: -.02em; }
+.page .sub { margin: 0 0 var(--s-8); color: var(--grey-6); font-size: 14px; }
+.verdict { display: grid; grid-template-columns: auto 1fr; gap: var(--s-5); align-items: center; padding: var(--s-5) var(--s-6); border-radius: var(--r-card); background: var(--turquoise-very-light); border-left: 4px solid var(--turquoise-very-dark); margin-bottom: var(--s-8); }
+.verdict svg { width: 32px; height: 32px; color: var(--turquoise-very-dark); }
+.verdict p { margin: 0; font-size: 16px; line-height: 1.5; }
+.verdict strong { font-weight: 600; }
+.page h2 { margin: var(--s-8) 0 var(--s-4); font-size: 18px; font-weight: 600; padding-bottom: var(--s-2); border-bottom: 1px solid var(--grey-2); display: flex; gap: var(--s-2); align-items: center; }
+.page h2 svg { color: var(--blue); }
+.kv { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--s-4); }
+.kv div { padding: var(--s-4); border: 1px solid var(--grey-2); border-radius: var(--r-ctrl); }
+.kv span { font-size: 13px; color: var(--grey-7); }
+.kv b { display: block; font-size: 30px; font-weight: 600; letter-spacing: -.02em; line-height: 1.15; margin-top: 4px; }
+.kv small { display: block; font-size: 12px; color: var(--grey-6); margin-top: 2px; display: flex; gap: 4px; align-items: center; }
+.kv small svg { width: 13px; height: 13px; }
+.page p.t { font-size: 15px; line-height: 1.65; color: var(--grey-8); margin: 0 0 var(--s-3); max-width: 72ch; }
+.page table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.page th { text-align: left; font-size: 12px; font-weight: 600; color: var(--grey-6); padding: 0 var(--s-3) var(--s-2) 0; border-bottom: 1px solid var(--grey-2); }
+.page td { height: 48px; padding: 0 var(--s-3) 0 0; border-bottom: 1px solid var(--grey-1); }
+.page .r { text-align: right; }
+.status--bad { background: var(--coral-very-light); color: var(--coral-dark); }
+
+.sendbox { margin: 0; padding: var(--s-4) var(--s-5); border-bottom: 1px solid var(--grey-2); background: var(--blue-tint); display: grid; grid-template-columns: 1fr auto; gap: var(--s-4); align-items: center; animation: rise .25s var(--ease-out) both; }
+.sendbox p { margin: 0; font-size: 14px; }
+.sendbox p small { display: block; color: var(--grey-7); font-size: 13px; margin-top: 2px; }
+.sendbox .act { display: flex; gap: var(--s-2); }
+.sendbox.is-done { background: var(--turquoise-very-light); grid-template-columns: auto 1fr; color: var(--turquoise-very-dark); }
+.sendbox.is-done svg { width: 20px; height: 20px; }
+
+@media (max-width: 1180px) { .ws { grid-template-columns: 1fr; } .sticky { position: static; } .kv { grid-template-columns: repeat(2, 1fr); } .page { padding: var(--s-6); } }
+</style>
+</head>
+<body data-page="informes">
+<div class="app">
+  <nav class="nav" id="nav" aria-label="Principal"></nav>
+
+  <main class="main">
+    <nav class="crumbs" aria-label="Ruta"><a href="carlos.html">Trust Center</a><i data-lucide="chevron-right"></i><span aria-current="page">Informes de auditoría</span></nav>
+    <div class="ph">
+      <div>
+        <h1>Informe semanal de auditoría</h1>
+        <p>La IA resume la actividad de la semana: uso, trazabilidad, cumplimiento y seguridad. Tú decides qué incluir y a quién enviarlo.</p>
+      </div>
+    </div>
+
+    <div class="ws">
+      <aside class="sticky">
+        <form class="panel cfg" id="cfg" novalidate>
+          <h2>Configura el informe</h2>
+          <fieldset>
+            <legend>Periodo</legend>
+            <label class="ropt"><input type="radio" name="per" value="7d" checked><span><strong>Últimos 7 días</strong><small>30 sep – 6 oct · incluye la revisión de hoy</small></span></label>
+            <label class="ropt"><input type="radio" name="per" value="s40"><span><strong>Semana 40</strong><small>29 sep – 5 oct</small></span></label>
+          </fieldset>
+          <fieldset id="secs">
+            <legend>Secciones</legend>
+            <label class="chk"><input type="checkbox" value="uso" checked>Uso de la plataforma</label>
+            <label class="chk"><input type="checkbox" value="traz" checked>Trazabilidad de documentos</label>
+            <label class="chk"><input type="checkbox" value="cumpl" checked>Cumplimiento de políticas</label>
+            <label class="chk"><input type="checkbox" value="seg" checked>Seguridad, alertas e incidencias</label>
+          </fieldset>
+          <button class="btn btn--primary" type="submit" id="gen-btn"><i data-lucide="sparkles"></i>Generar informe</button>
+          <p class="err" id="err" hidden><i data-lucide="circle-alert"></i>Marca al menos una sección para generar el informe.</p>
+        </form>
+      </aside>
+
+      <div id="out">
+        <div class="idle">
+          <h2>Tu informe de la semana, listo en unos segundos</h2>
+          <p>La IA reúne los datos del Audit Trail y redacta un informe que puedes presentar en una auditoría interna. Cada cifra enlaza con su evidencia.</p>
+          <ul><li>Indicadores de uso y accesos por nivel de confidencialidad</li><li>Trazabilidad de los documentos críticos</li><li>Estado de cada política y documentos expirados</li><li>Alertas, cómo se cerraron e incidencias abiertas</li></ul>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="assets/carlos.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  const out = $('out');
+
+  const SEC = {
+    uso: () => `<h2><i data-lucide="users"></i>Uso de la plataforma</h2>
+      <div class="kv">
+        <div><span>Usuarios activos</span><b class="num">184</b><small><i data-lucide="arrow-up"></i>6 · semana</small></div>
+        <div><span>Accesos</span><b class="num">15.702</b><small><i data-lucide="arrow-up"></i>7 %</small></div>
+        <div><span>Generados con IA</span><b class="num">312</b><small><i data-lucide="arrow-up"></i>11 %</small></div>
+        <div><span>Confidencial</span><b class="num">1.846</b><small><i data-lucide="arrow-up"></i>42 % · inusual</small></div>
+      </div>`,
+    traz: () => `<h2><i data-lucide="history"></i>Trazabilidad de documentos</h2>
+      <p class="t">El <strong>100 %</strong> de los documentos críticos tiene su historia completa: creación, versiones, fuentes y accesos. El 99 % de los 312 documentos generados con IA cita sus fuentes; los 3 restantes se devolvieron a sus autores para completar las citas.</p>
+      <table><thead><tr><th>Documento crítico</th><th>Versión vigente</th><th class="r">Consultas</th><th>Estado</th></tr></thead><tbody>
+        <tr><td>Resultados Q2 2026 · Grupo</td><td>v3 · 19 sep</td><td class="r num">299</td><td><span class="status status--warn"><i data-lucide="circle-alert"></i>Marketing usa la v2</span></td></tr>
+        <tr><td>Plan Estratégico 2027 · Gabinete</td><td>v5 · 28 sep</td><td class="r num">64</td><td><span class="status status--ok"><i data-lucide="check"></i>Correcto</span></td></tr>
+        <tr><td>Brand Guidelines 2026</td><td>v8 · 5 oct</td><td class="r num">1.120</td><td><span class="status status--ok"><i data-lucide="check"></i>Correcto</span></td></tr>
+      </tbody></table>`,
+    cumpl: () => `<h2><i data-lucide="clipboard-check"></i>Cumplimiento de políticas</h2>
+      <table><thead><tr><th>Política</th><th class="r">Resultado</th><th class="r">Objetivo</th><th>Estado</th></tr></thead><tbody>
+        <tr><td>Grounding</td><td class="r num">100 %</td><td class="r">≥ 98 %</td><td><span class="status status--ok"><i data-lucide="check"></i>Cumple</span></td></tr>
+        <tr><td>Documentos con fuentes</td><td class="r num">99 %</td><td class="r">≥ 98 %</td><td><span class="status status--ok"><i data-lucide="check"></i>Cumple</span></td></tr>
+        <tr><td>Recursos on-brand</td><td class="r num">98 %</td><td class="r">≥ 98 %</td><td><span class="status status--ok"><i data-lucide="check"></i>Cumple</span></td></tr>
+        <tr><td>Metadata completa</td><td class="r num">97 %</td><td class="r">≥ 98 %</td><td><span class="status status--warn"><i data-lucide="circle-alert"></i>1 pt por debajo</span></td></tr>
+        <tr><td>Documentos expirados</td><td class="r num">3</td><td class="r">0</td><td><span class="status status--warn"><i data-lucide="circle-alert"></i>Asignados a Laura Pérez</span></td></tr>
+      </tbody></table>`,
+    seg: () => `<h2><i data-lucide="shield-check"></i>Seguridad, alertas e incidencias</h2>
+      <p class="t">Se generaron <strong>4 alertas</strong>. 3 están cerradas y 1 sigue abierta. Ningún acceso no autorizado llegó a producirse.</p>
+      <table><thead><tr><th>Alerta o incidencia</th><th>Cierre</th><th>Estado</th></tr></thead><tbody>
+        <tr><td>ALR-0187 · Pico de accesos a documentación Confidencial</td><td>Carlos Ruiz · hoy · actividad legítima</td><td><span class="status status--ok"><i data-lucide="check"></i>Cerrada</span></td></tr>
+        <tr><td>ALR-0185 · Confidencial compartido con un grupo incorrecto</td><td>Carlos Ruiz · hoy · acceso retirado</td><td><span class="status status--ok"><i data-lucide="check"></i>Cerrada</span></td></tr>
+        <tr><td>ALR-0181 · Conector SIC con latencia de 2 h</td><td>Laura Pérez · 2 oct</td><td><span class="status status--ok"><i data-lucide="check"></i>Cerrada</span></td></tr>
+        <tr><td>ALR-0188 · Intento de acceso a un documento restringido</td><td>—</td><td><span class="status status--bad"><i data-lucide="circle-alert"></i>Abierta · alta</span></td></tr>
+        <tr><td>INC-2026-0412 · Revisión de permisos de 3 usuarios de Comunicación</td><td>Enviada a Administración</td><td><span class="status status--info"><i data-lucide="clock-3"></i>En curso</span></td></tr>
+      </tbody></table>`,
+  };
+
+  $('cfg').addEventListener('change', () => { $('err').hidden = true; });
+  $('cfg').addEventListener('submit', e => {
+    e.preventDefault();
+    const secs = [...document.querySelectorAll('#secs input:checked')].map(i => i.value);
+    if (!secs.length) { $('err').hidden = false; draw(); return; }
+    const per = document.querySelector('input[name="per"]:checked').value;
+    generate(secs, per);
+  });
+
+  function generate(secs, per) {
+    const btn = $('gen-btn');
+    btn.disabled = true; btn.innerHTML = '<i data-lucide="loader-circle" class="spin"></i>Generando…';
+    const steps = ['Leyendo el Audit Trail de la semana', 'Calculando indicadores y comparativas', 'Revisando políticas y alertas', 'Redactando el informe con fuentes'];
+    out.innerHTML = `<div class="gen is-on" role="status"><p class="gen__title"><i data-lucide="sparkles" style="color:var(--blue)"></i>Generando el informe</p><ul class="gen__steps">${steps.map((s, i) => `<li data-i="${i}"><span class="dot"><i data-lucide="circle"></i></span>${s}</li>`).join('')}</ul></div>`;
+    draw();
+    let i = 0;
+    const tick = () => {
+      const lis = out.querySelectorAll('.gen__steps li');
+      lis.forEach((li, j) => {
+        li.className = j < i ? 'is-done' : j === i ? 'is-active' : '';
+        li.querySelector('.dot').innerHTML = `<i data-lucide="${j < i ? 'circle-check' : j === i ? 'loader-circle' : 'circle'}"${j === i ? ' class="spin"' : ''}></i>`;
+      });
+      draw();
+      if (i++ < steps.length) setTimeout(tick, reduceMotion ? 0 : 450);
+      else render(secs, per);
+    };
+    tick();
+  }
+
+  function render(secs, per) {
+    const btn = $('gen-btn');
+    btn.disabled = false; btn.innerHTML = '<i data-lucide="refresh-cw"></i>Volver a generar';
+    const range = per === '7d' ? '30 de septiembre – 6 de octubre de 2026' : 'Semana 40 · 29 de septiembre – 5 de octubre de 2026';
+    out.innerHTML = `<article class="rep" aria-labelledby="rep-t">
+      <div class="rep__bar"><span class="ok"><i data-lucide="circle-check"></i>Informe generado · 18:30</span>
+        <a class="btn btn--ghost" href="#" data-soon="Descarga en PDF: llegará en la siguiente fase del prototipo"><i data-lucide="file-down"></i>PDF</a>
+        <a class="btn btn--ghost" href="#" data-soon="Descarga en Word: llegará en la siguiente fase del prototipo"><i data-lucide="file-type"></i>Word</a>
+        <button class="btn btn--primary" type="button" id="send"><i data-lucide="send"></i>Enviar al Comité</button></div>
+      <div id="send-slot"></div>
+      <div class="page">
+        <span class="page__k">Informe de auditoría · Plataforma SSoT</span>
+        <h1 id="rep-t">Actividad, trazabilidad y cumplimiento</h1>
+        <p class="sub">${range} · Preparado por Carlos Ruiz, Governance & Compliance</p>
+        <div class="verdict"><i data-lucide="shield-check"></i><p><strong>La plataforma ha funcionado de forma segura y conforme</strong> a las políticas de la compañía. Se detectó 1 anomalía, revisada y cerrada como actividad legítima. Queda 1 alerta abierta y 1 revisión de permisos en curso.</p></div>
+        ${secs.map(s => SEC[s]()).join('')}
+      </div>
+    </article>`;
+    draw();
+    $('send').addEventListener('click', askSend);
+  }
+
+  function askSend() {
+    $('send').disabled = true;
+    $('send-slot').innerHTML = `<div class="sendbox" role="group" aria-labelledby="sb-t"><p id="sb-t"><strong>Enviar a Comité de Riesgos y Cumplimiento</strong><small>7 personas · se guardará una copia en Informes de auditoría</small></p>
+      <div class="act"><button class="btn btn--primary" type="button" id="sb-ok"><i data-lucide="send"></i>Enviar</button><button class="btn btn--ghost" type="button" id="sb-no">Cancelar</button></div></div>`;
+    draw(); $('sb-ok').focus();
+    $('sb-no').addEventListener('click', () => { $('send-slot').innerHTML = ''; $('send').disabled = false; $('send').focus(); });
+    $('sb-ok').addEventListener('click', () => {
+      $('send-slot').innerHTML = `<div class="sendbox is-done" role="status"><i data-lucide="circle-check"></i><p><strong>Informe enviado al Comité de Riesgos y Cumplimiento.</strong><small>Guardado en Informes de auditoría · registrado en el Audit Trail a las 18:31</small></p></div>`;
+      $('send').innerHTML = '<i data-lucide="check"></i>Enviado'; draw();
+    });
+  }
+})();
+</script>
+</body>
+</html>

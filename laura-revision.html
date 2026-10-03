@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SSoT · Cola de validación — Laura Pérez</title>
+<link rel="stylesheet" href="assets/ssot.css">
+<style>
+.ws { display: grid; grid-template-columns: 220px minmax(0, 1fr) 380px; gap: var(--s-5); align-items: start; }
+.lbl { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--grey-6); margin: 0 0 var(--s-2); }
+.sticky { position: sticky; top: var(--s-6); }
+
+/* Queue */
+.qprog { display: flex; align-items: center; gap: var(--s-3); margin-bottom: var(--s-3); font-size: 13px; color: var(--grey-7); }
+.qprog .meter { flex: 1; height: 6px; border-radius: 3px; background: var(--grey-2); overflow: hidden; }
+.qprog .meter i { display: block; height: 100%; background: var(--turquoise-very-dark); width: 0; transition: width .4s var(--ease-out); }
+.ql { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.qi { width: 100%; text-align: left; border: 1px solid var(--grey-2); background: var(--grey-0); border-radius: var(--r-ctrl); padding: var(--s-3); display: grid; gap: 6px; transition: border-color .15s, box-shadow .15s; }
+.qi:hover { border-color: var(--grey-3); }
+.qi[aria-current="true"] { border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-tint); }
+.qi p { margin: 0; font-weight: 500; font-size: 14px; line-height: 1.35; }
+.qi .meta { display: flex; justify-content: space-between; align-items: center; gap: var(--s-2); font-size: 12px; color: var(--grey-6); }
+.qi.is-done { background: var(--grey-1); }
+.qi.is-done p { color: var(--grey-6); }
+.qmore { margin-top: var(--s-3); font-size: 13px; color: var(--grey-6); }
+.status--bad { background: var(--coral-very-light); color: var(--coral-dark); }
+
+/* Document */
+.doc { background: var(--grey-0); border: 1px solid var(--grey-2); border-radius: var(--r-card); box-shadow: var(--shadow-1); overflow: hidden; }
+.doc__bar { display: flex; align-items: center; gap: var(--s-3); padding: var(--s-3) var(--s-5); border-bottom: 1px solid var(--grey-2); background: var(--grey-1); font-size: 13px; color: var(--grey-7); }
+.doc__bar svg { width: 16px; height: 16px; }
+.doc__bar span:last-child { margin-left: auto; }
+.page { padding: var(--s-8); }
+.page h1 { font-size: 26px; font-weight: 500; letter-spacing: -.01em; line-height: 1.25; margin: 0 0 var(--s-2); }
+.page .sub { font-size: 13px; color: var(--grey-6); margin: 0 0 var(--s-5); }
+.page p { font-size: 15px; line-height: 1.65; color: var(--grey-8); margin: 0 0 var(--s-3); }
+.page .hl { background: var(--yellow-very-light); box-shadow: 0 0 0 2px var(--yellow-very-light); border-radius: 2px; }
+.page table { border-collapse: collapse; font-size: 14px; margin: var(--s-3) 0; }
+.page td, .page th { border-bottom: 1px solid var(--grey-2); padding: 6px 16px 6px 0; text-align: left; }
+
+/* Duplicate compare */
+.dup { margin: var(--s-5) var(--s-6) 0; padding: var(--s-5); border: 1.5px solid var(--blue); border-radius: var(--r-card); background: var(--blue-tint); }
+.dup h3 { margin: 0 0 4px; font-size: 16px; font-weight: 600; display: flex; gap: 6px; align-items: center; }
+.dup h3 svg { width: 18px; height: 18px; color: var(--blue); }
+.dup > p { margin: 0 0 var(--s-4); font-size: 14px; color: var(--grey-7); }
+.vers { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-3); }
+.ver { display: grid; grid-template-columns: 20px 1fr; gap: var(--s-3); padding: var(--s-4); background: var(--grey-0); border: 1.5px solid var(--grey-2); border-radius: var(--r-ctrl); cursor: pointer; }
+.ver input { width: 18px; height: 18px; accent-color: var(--blue); margin: 2px 0 0; }
+.ver:has(input:checked) { border-color: var(--blue); }
+.ver strong { display: block; font-weight: 600; font-size: 14px; }
+.ver small { display: block; font-size: 12px; color: var(--grey-6); margin-top: 2px; }
+.ver ul { margin: var(--s-2) 0 0; padding-left: 16px; font-size: 13px; color: var(--grey-7); }
+.ver .rec { display: inline-flex; margin-top: var(--s-2); }
+.dup__act { display: flex; flex-wrap: wrap; gap: var(--s-2); margin-top: var(--s-4); align-items: center; }
+.dup.is-done { background: var(--turquoise-very-light); border-color: var(--turquoise-very-dark); }
+.dup.is-done h3 svg { color: var(--turquoise-very-dark); }
+
+/* Metadata */
+.conf { display: grid; grid-template-columns: auto 1fr; gap: var(--s-4); align-items: center; padding: var(--s-4); border-radius: var(--r-ctrl); background: var(--grey-1); margin-bottom: var(--s-3); }
+.ring { --p: 96; width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; background: conic-gradient(var(--blue) calc(var(--p) * 1%), var(--grey-2) 0); position: relative; }
+.ring::before { content: ""; position: absolute; inset: 6px; border-radius: 50%; background: var(--grey-1); }
+.ring b { position: relative; font-size: 16px; font-weight: 600; }
+.ring.low { background: conic-gradient(#A7863E calc(var(--p) * 1%), var(--grey-2) 0); }
+.conf p { margin: 0; font-size: 14px; font-weight: 600; }
+.conf small { display: block; font-size: 12px; color: var(--grey-6); font-weight: 400; margin-top: 2px; }
+
+.fields { list-style: none; margin: 0; padding: 0; }
+.f { display: grid; grid-template-columns: 104px 1fr 50px; gap: var(--s-2); align-items: center; min-height: 48px; border-bottom: 1px solid var(--grey-1); }
+.f:last-child { border-bottom: 0; }
+.f label { font-size: 13px; color: var(--grey-6); }
+.f select, .f .val { width: 100%; height: 36px; border: 1px solid transparent; border-radius: 6px; background: transparent; font-size: 14px; font-weight: 500; color: var(--grey-9); padding: 0 6px; appearance: none; -webkit-appearance: none; cursor: pointer; text-overflow: ellipsis; }
+.f select:hover, .f select:focus { border-color: var(--grey-3); background: var(--grey-0); outline: none; }
+.f .pc { font-size: 12px; font-weight: 600; text-align: right; color: var(--turquoise-very-dark); display: flex; justify-content: flex-end; align-items: center; gap: 3px; }
+.f .pc svg { width: 13px; height: 13px; }
+.f.low { background: var(--yellow-very-light); margin: 0 calc(var(--s-5) * -1); padding: 0 var(--s-5); border-bottom-color: var(--grey-0); }
+.f.low .pc { color: var(--yellow-very-dark); }
+.f.low select { border-color: #A7863E; background: var(--grey-0); }
+.f.low label { color: var(--yellow-very-dark); font-weight: 600; }
+.f.fixed { background: var(--turquoise-very-light); }
+.f.fixed select { border-color: var(--turquoise-very-dark); }
+.f.fixed .pc, .f.fixed label { color: var(--turquoise-very-dark); }
+.f.changed select { color: var(--blue); }
+.why { grid-column: 2 / 4; font-size: 12px; color: var(--yellow-very-dark); margin: -6px 0 8px 6px; }
+.f.fixed .why { color: var(--turquoise-very-dark); }
+
+.mact { display: grid; gap: var(--s-2); }
+.mact .btn { width: 100%; }
+.btn:disabled { background: var(--grey-2); color: var(--grey-6); cursor: not-allowed; transform: none; }
+.note { margin: 0; font-size: 13px; color: var(--grey-6); display: flex; gap: 6px; }
+.note svg { width: 16px; height: 16px; flex-shrink: 0; margin-top: 1px; }
+.note.is-warn { color: var(--yellow-very-dark); font-weight: 500; }
+
+/* Completion */
+.fin { padding: var(--s-10); text-align: left; animation: rise .4s var(--ease-out) both; }
+.fin__icon { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; background: var(--turquoise-very-light); color: var(--turquoise-very-dark); margin-bottom: var(--s-5); animation: pop .4s var(--ease-out) both; }
+.fin__icon svg { width: 32px; height: 32px; }
+.fin h2 { margin: 0 0 var(--s-2); font-size: 28px; font-weight: 500; letter-spacing: -.01em; }
+.fin > p { margin: 0 0 var(--s-6); color: var(--grey-7); font-size: 15px; max-width: 60ch; }
+.fin ul { list-style: none; margin: 0 0 var(--s-6); padding: 0; display: grid; gap: var(--s-3); }
+.fin li { display: flex; gap: var(--s-3); align-items: flex-start; font-size: 15px; }
+.fin li svg { width: 20px; height: 20px; color: var(--turquoise-very-dark); flex-shrink: 0; margin-top: 1px; }
+.fin li small { display: block; color: var(--grey-6); font-size: 13px; }
+
+@media (max-width: 1280px) { .ws { grid-template-columns: 1fr; } .sticky { position: static; } .vers { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body data-page="cola">
+<div class="app">
+  <nav class="nav" id="nav" aria-label="Principal"></nav>
+
+  <main class="main" style="max-width:1520px">
+    <nav class="crumbs" aria-label="Ruta"><a href="laura.html">Knowledge Health</a><i data-lucide="chevron-right"></i><span>Cola de validación</span></nav>
+    <div class="ph">
+      <div><span class="ph__kicker">Metadata Review</span><h1>La IA propone. Tú validas.</h1><p>Los 3 documentos de esta noche que la IA no ha podido clasificar con seguridad o que necesitan una decisión.</p></div>
+    </div>
+
+    <div class="ws">
+      <!-- Queue -->
+      <aside class="sticky" aria-label="Cola">
+        <p class="lbl">Esta noche · baja confianza</p>
+        <div class="qprog"><span class="meter"><i id="qbar"></i></span><span id="qcount" class="num">0 de 3</span></div>
+        <ul class="ql" id="ql"></ul>
+        <p class="qmore">+ 24 pendientes de días anteriores</p>
+      </aside>
+
+      <!-- Document -->
+      <section class="doc" id="doc" aria-label="Documento"></section>
+
+      <!-- Metadata -->
+      <aside class="panel sticky" id="meta" aria-label="Metadatos propuestos"></aside>
+    </div>
+  </main>
+</div>
+
+<script src="assets/laura.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script>
+  const $ = id => document.getElementById(id);
+  const TG = ['Eje 1 – Liderazgo en red y conectividad', 'Eje 2 – Eficiencia y simplificación', 'Eje 3 – Más y mejores servicios para el cliente', 'Eje 4 – Sostenibilidad y confianza digital'];
+  const F = (k, label, v, c, opts, why) => ({ k, label, v, c, opts: opts || [v], why });
+  const DOCS = [
+    {
+      id: 1, title: 'Nota de prensa · Despliegue 5G en Andalucía', short: 'Nota de prensa · 5G Andalucía', kind: 'Validar propuesta', src: 'SharePoint · /Comunicación/Notas de prensa/2026', conf: 96,
+      fields: [
+        F('pais', 'País', 'España', 99, ['España', 'Portugal']),
+        F('mercado', 'Mercado', 'España', 98, ['España', 'Europa']),
+        F('area', 'Área', 'Comunicación', 99, ['Comunicación', 'Marca', 'Gabinete']),
+        F('marca', 'Marca', 'Telefónica', 97, ['Telefónica', 'Movistar', 'O2']),
+        F('tipo', 'Tipo de documento', 'Nota de prensa', 99, ['Nota de prensa', 'Informe', 'Presentación']),
+        F('conf', 'Confidencialidad', 'Interna', 92, ['Pública', 'Interna', 'Confidencial']),
+        F('owner', 'Owner', 'Marta López', 95, ['Marta López', 'María Jiménez']),
+        F('vig', 'Vigencia', 'Hasta 6 abr 2027', 90, ['Hasta 6 abr 2027', 'Hasta 6 oct 2027']),
+        F('tg', 'Transform & Grow', TG[2], 94, TG),
+        F('idioma', 'Idioma', 'Español', 99, ['Español', 'Inglés']),
+      ],
+      page: `<h1>Telefónica completa el despliegue 5G en las ocho provincias andaluzas</h1><p class="sub">Nota de prensa · Comunicación Corporativa · 5 de octubre de 2026 · Uso interno hasta publicación</p>
+        <p>Sevilla, 5 de octubre de 2026. Telefónica ha completado el despliegue de su red 5G en las ocho provincias de Andalucía, con cobertura en [XX] municipios y más de [X] millones de habitantes.</p>
+        <p>El despliegue forma parte del plan para ofrecer más y mejores servicios a los clientes en toda España, con especial foco en zonas rurales y polígonos industriales.</p>
+        <p>«Esta red es la base sobre la que construimos los servicios digitales de los próximos años», ha señalado Marta López, responsable de Comunicación en Andalucía.</p>`
+    },
+    {
+      id: 2, title: 'Plan de Comunicación 2027', short: 'Plan de Comunicación 2027', kind: 'Duplicado', src: 'SharePoint · /Comunicación/Planificación', conf: 94, dup: true,
+      fields: [
+        F('pais', 'País', 'España', 97, ['España', 'Global']),
+        F('mercado', 'Mercado', 'Global', 91, ['Global', 'España']),
+        F('area', 'Área', 'Comunicación', 99, ['Comunicación', 'Marca']),
+        F('marca', 'Marca', 'Telefónica', 98, ['Telefónica']),
+        F('tipo', 'Tipo de documento', 'Plan estratégico', 96, ['Plan estratégico', 'Presentación']),
+        F('conf', 'Confidencialidad', 'Confidencial', 93, ['Interna', 'Confidencial']),
+        F('owner', 'Owner', 'María Jiménez', 95, ['María Jiménez', 'Marta López']),
+        F('vig', 'Vigencia', 'Hasta 31 dic 2027', 97, ['Hasta 31 dic 2027']),
+        F('tg', 'Transform & Grow', TG[2], 88, TG),
+        F('idioma', 'Idioma', 'Español', 99, ['Español']),
+      ],
+      page: `<h1>Plan de Comunicación 2027</h1><p class="sub">Comunicación Corporativa · v3 · subido el 5 de octubre de 2026 · Confidencial</p>
+        <p>Este plan define los ejes de comunicación para 2027, los hitos corporativos del año y el calendario de campañas por trimestre.</p>
+        <table><tr><th>Trimestre</th><th>Hito principal</th></tr><tr><td>Q1</td><td>Resultados anuales 2026</td></tr><tr><td>Q2</td><td>Junta General de Accionistas</td></tr><tr><td>Q3</td><td>Informe de Sostenibilidad</td></tr><tr><td>Q4</td><td>Plan estratégico 2028</td></tr></table>`
+    },
+    {
+      id: 3, title: 'Resultados Q2 LATAM', short: 'Resultados Q2 LATAM', kind: 'Metadatos incompletos', src: 'Fuente externa · informe de analista (PDF)', conf: 58,
+      fields: [
+        F('pais', 'País', 'Varios', 81, ['Varios', 'Brasil', 'México']),
+        F('mercado', 'Mercado', 'LATAM', 52, ['LATAM', 'Hispam', 'Brasil'], 'El documento habla sobre todo de Hispam; «LATAM» incluye Brasil.'),
+        F('area', 'Área', 'Investigación', 88, ['Investigación', 'Competencia', 'Clientes']),
+        F('marca', 'Marca', 'Movistar', 84, ['Movistar', 'Telefónica', 'Vivo']),
+        F('tipo', 'Tipo de documento', 'Informe externo', 93, ['Informe externo', 'Informe interno']),
+        F('conf', 'Confidencialidad', 'Interna', 79, ['Interna', 'Confidencial']),
+        F('owner', 'Owner', 'Sin asignar', 31, ['Sin asignar', 'Andrés Gómez · Finanzas Hispam', 'Lucía Ferrer · Relación con Inversores'], 'Nadie lo ha subido desde un área interna. Sugerencia: Andrés Gómez (64 %).'),
+        F('vig', 'Vigencia', 'Hasta 31 mar 2027', 86, ['Hasta 31 mar 2027', 'Hasta 30 jun 2027']),
+        F('tg', 'Transform & Grow', TG[0], 72, TG),
+        F('idioma', 'Idioma', 'Español', 97, ['Español', 'Portugués']),
+      ],
+      page: `<h1>Resultados del segundo trimestre · Operadores en Latinoamérica</h1><p class="sub">Informe de analista externo · 2 de octubre de 2026 · 18 páginas</p>
+        <p>El segundo trimestre confirma la recuperación del mercado móvil en <span class="hl">Colombia, Chile y Perú</span>, con un crecimiento medio de ingresos del [X] %.</p>
+        <p>Movistar mantiene su posición en <span class="hl">la región hispanohablante</span>, mientras que el mercado brasileño se analiza en un anexo separado.</p>
+        <p>Los analistas destacan la aceleración de la fibra hasta el hogar y la consolidación del sector como principales tendencias para 2027.</p>`
+    },
+  ];
+  const state = { cur: 0, done: [false, false, false] };
+
+  function renderQueue() {
+    $('ql').innerHTML = DOCS.map((d, i) => {
+      const st = state.done[i] ? '<span class="status status--ok"><i data-lucide="check"></i>Hecho</span>'
+        : d.dup ? '<span class="status status--info"><i data-lucide="copy"></i>Duplicado</span>'
+        : d.conf < 70 ? '<span class="status status--warn"><i data-lucide="circle-alert"></i>Baja confianza</span>'
+        : '<span class="status status--info"><i data-lucide="sparkles"></i>Propuesta lista</span>';
+      return `<li><button class="qi ${state.done[i] ? 'is-done' : ''}" type="button" data-i="${i}" aria-current="${i === state.cur}"><p>${d.short}</p><span class="meta">${st}<span class="num">${d.conf} %</span></span></button></li>`;
+    }).join('');
+    const n = state.done.filter(Boolean).length;
+    $('qbar').style.width = (n / 3 * 100) + '%'; $('qcount').textContent = `${n} de 3`;
+    draw();
+  }
+  $('ql').addEventListener('click', e => { const b = e.target.closest('.qi'); if (b) open(+b.dataset.i); });
+
+  function open(i) {
+    state.cur = i; const d = DOCS[i];
+    $('doc').innerHTML = `<div class="doc__bar"><i data-lucide="file-text"></i><span>${d.src}</span><span>Subido esta noche</span></div>${d.dup ? dupHTML() : ''}<div class="page">${d.page}</div>`;
+    renderMeta(d);
+    renderQueue();
+    if (d.dup) bindDup();
+  }
+
+  function renderMeta(d) {
+    const low = d.fields.filter(f => f.c < 70);
+    const ringCls = d.conf < 70 ? 'low' : '';
+    const done = state.done[state.cur];
+    $('meta').innerHTML = `
+      <div class="panel__head"><h2><i data-lucide="tags"></i>Metadatos propuestos</h2><span class="panel__meta">10 campos</span></div>
+      <div class="conf"><span class="ring ${ringCls}" style="--p:${d.conf}"><b class="num">${d.conf}%</b></span><div><p>${d.conf >= 90 ? 'Propuesta con confianza alta' : 'Confianza baja en ' + low.length + ' campos'}</p><small>${d.conf >= 90 ? 'Revisa de un vistazo y valida.' : 'Confírmalos o corrígelos. El resto ya está bien.'}</small></div></div>
+      <div class="mact" id="mact"></div>
+      <p class="lbl" style="margin-top:var(--s-5)">Campos</p>
+      <ul class="fields">${d.fields.map(f => `
+        <li class="f ${f.c < 70 ? 'low' : ''}" data-k="${f.k}">
+          <label for="f-${f.k}">${f.label}</label>
+          <select id="f-${f.k}" ${done ? 'disabled' : ''}>${f.opts.map(o => `<option ${o === f.v ? 'selected' : ''}>${o}</option>`).join('')}</select>
+          <span class="pc num">${f.c < 70 ? '<i data-lucide="circle-alert"></i>' : '<i data-lucide="check"></i>'}${f.c}%</span>
+          ${f.why ? `<span class="why">${f.why}</span>` : ''}
+        </li>`).join('')}</ul>`;
+    $('meta').querySelectorAll('select').forEach(s => s.addEventListener('change', () => onChange(s)));
+    renderActions();
+    draw();
+  }
+
+  function pendingLow() { return [...$('meta').querySelectorAll('.f.low')].length; }
+
+  function onChange(sel) {
+    const li = sel.closest('.f'), d = DOCS[state.cur], f = d.fields.find(x => x.k === li.dataset.k);
+    li.classList.toggle('changed', sel.value !== f.v);
+    if (li.classList.contains('low') && sel.value !== 'Sin asignar') {
+      li.classList.replace('low', 'fixed');
+      li.querySelector('.pc').innerHTML = '<i data-lucide="check"></i>Tú';
+      const w = li.querySelector('.why'); if (w) w.textContent = 'Corregido por ti · la IA aprenderá de este cambio.';
+      draw();
+    }
+    renderActions();
+  }
+
+  function renderActions() {
+    const d = DOCS[state.cur], i = state.cur, mact = $('mact');
+    if (state.done[i]) {
+      mact.innerHTML = `<p class="note"><i data-lucide="circle-check" style="color:var(--turquoise-very-dark)"></i>Ya revisado. El documento está publicado en el repositorio.</p>${nextBtn()}`;
+      bindNext(); draw(); return;
+    }
+    if (d.dup) {
+      mact.innerHTML = `<p class="note is-warn"><i data-lucide="copy"></i>Resuelve la duplicidad en el documento para continuar.</p>`;
+      draw(); return;
+    }
+    const low = pendingLow();
+    const changed = $('meta').querySelectorAll('.f.changed').length;
+    mact.innerHTML = `<button class="btn btn--primary" type="button" id="validate" ${low ? 'disabled' : ''}><i data-lucide="check-check"></i>${changed ? 'Validar con ' + changed + (changed > 1 ? ' correcciones' : ' corrección') : 'Validar propuesta'}</button>
+      ${low ? `<p class="note is-warn"><i data-lucide="circle-alert"></i>Confirma ${low} campo${low > 1 ? 's' : ''} de baja confianza para validar.</p>` : `<p class="note"><i data-lucide="info"></i>Puedes cambiar cualquier campo antes de validar.</p>`}`;
+    $('validate')?.addEventListener('click', () => complete(changed ? `Validado con ${changed} ${changed > 1 ? 'correcciones' : 'corrección'}` : 'Propuesta validada · documento publicado'));
+    draw();
+  }
+
+  function complete(msg) {
+    state.done[state.cur] = true; showToast(msg);
+    renderQueue();
+    const order = [0, 1, 2].map(k => (state.cur + 1 + k) % 3);
+    const next = order.find(k => !state.done[k]);
+    if (next === undefined) return finish();
+    setTimeout(() => open(next), reduceMotion ? 0 : 500);
+  }
+  const nextBtn = () => { const n = state.done.findIndex(x => !x); return n === -1 ? '' : `<button class="btn btn--ghost" type="button" id="next">Siguiente documento<i data-lucide="arrow-right"></i></button>`; };
+  const bindNext = () => $('next')?.addEventListener('click', () => open(state.done.findIndex(x => !x)));
+
+  // Duplicate
+  function dupHTML() {
+    return `<section class="dup" id="dup" aria-labelledby="dup-t">
+      <h3 id="dup-t"><i data-lucide="copy"></i>Posible duplicado · 94 % de contenido similar</h3>
+      <p>Ya existe una versión de este documento en Asana. Elige cuál será la versión oficial; la otra quedará archivada y sus enlaces apuntarán a la oficial.</p>
+      <div class="vers">
+        <label class="ver"><input type="radio" name="off" value="v3" checked><span><strong>v3 · este documento</strong><small>SharePoint · 5 oct 2026 · María Jiménez</small><ul><li>+ Sección «Junta General»</li><li>~ Calendario Q1 actualizado</li></ul><span class="status status--info rec"><i data-lucide="sparkles"></i>Recomendada</span><small>Más reciente y más completa</small></span></label>
+        <label class="ver"><input type="radio" name="off" value="v2"><span><strong>v2 · versión existente</strong><small>Asana · 12 sep 2026 · María Jiménez</small><ul><li>Enlazada desde 3 documentos</li><li>Usada por el agente en 41 respuestas</li></ul></span></label>
+      </div>
+      <div class="dup__act"><button class="btn btn--primary" type="button" id="merge"><i data-lucide="merge"></i>Fusionar y marcar como oficial</button><button class="btn btn--ghost" type="button" id="notdup">No es un duplicado</button></div>
+    </section>`;
+  }
+  function bindDup() {
+    $('merge').addEventListener('click', () => {
+      const v = document.querySelector('input[name="off"]:checked').value, other = v === 'v3' ? 'v2' : 'v3';
+      const dup = $('dup'); dup.classList.add('is-done');
+      dup.innerHTML = `<h3><i data-lucide="circle-check"></i>Fusionado · ${v} es la versión oficial</h3><p style="margin:0">La ${other} queda archivada. Los 3 documentos que la enlazaban y el agente ya usan la ${v}. Existe una única versión válida.</p>`;
+      draw(); complete(`Duplicado fusionado · ${v} es la versión oficial`);
+    });
+    $('notdup').addEventListener('click', () => { $('dup').remove(); DOCS[state.cur].dup = false; renderActions(); showToast('Marcado como documento distinto · la IA lo tendrá en cuenta'); });
+  }
+
+  function finish() {
+    $('meta').hidden = true;
+    document.querySelector('.ws').style.gridTemplateColumns = '220px minmax(0, 1fr)';
+    $('doc').innerHTML = `<div class="fin" aria-live="polite">
+      <div class="fin__icon"><i data-lucide="check"></i></div>
+      <h2>Revisión de esta noche completada</h2>
+      <p>Los 42 documentos sincronizados ya están clasificados y disponibles para el agente. Has tomado 3 decisiones; la IA hizo el resto.</p>
+      <ul>
+        <li><i data-lucide="check-check"></i><span>Nota de prensa · 5G Andalucía validada<small>Propuesta de la IA aceptada sin cambios (96 %)</small></span></li>
+        <li><i data-lucide="merge"></i><span>Plan de Comunicación 2027 fusionado<small>Una única versión oficial; la anterior archivada</small></span></li>
+        <li><i data-lucide="user-check"></i><span>Resultados Q2 LATAM corregido<small>Mercado y owner corregidos · la IA aprende de tus cambios</small></span></li>
+      </ul>
+      <a class="btn btn--primary" href="laura.html?done=1"><i data-lucide="activity"></i>Volver a Knowledge Health</a>
+    </div>`;
+    const b = document.getElementById('nav-badge'); if (b) b.textContent = '24';
+    draw();
+  }
+
+  const start = Math.min(Math.max((+new URLSearchParams(location.search).get('doc') || 1) - 1, 0), 2);
+  open(start);
+</script>
+</body>
+</html>

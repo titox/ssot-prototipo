@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SSoT · Knowledge Health — Laura Pérez</title>
+<link rel="stylesheet" href="assets/ssot.css">
+<style>
+.hq { font-size: 40px; line-height: 1.1; font-weight: 500; letter-spacing: -.02em; margin: 0 0 var(--s-6); }
+.hq span { color: var(--blue); }
+
+/* Alert (after review) */
+.alert { display: grid; grid-template-columns: auto 1fr auto; gap: var(--s-4); align-items: center; padding: var(--s-4) var(--s-5); margin-bottom: var(--s-5); border-radius: var(--r-card); background: var(--coral-very-light); border: 1.5px solid var(--coral-dark); color: var(--coral-dark); animation: rise .4s var(--ease-out) both; }
+.alert > svg { width: 24px; height: 24px; }
+.alert__tag { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+.alert p { margin: 2px 0 0; font-size: 15px; color: var(--grey-9); }
+.alert p strong { font-weight: 600; }
+.alert__act { display: flex; gap: var(--s-2); }
+.alert.is-ok { background: var(--turquoise-very-light); border-color: var(--turquoise-very-dark); color: var(--turquoise-very-dark); }
+.alert.is-busy { background: var(--blue-tint); border-color: var(--blue); color: var(--blue); }
+.btn--danger { background: var(--coral-dark); color: var(--grey-0); }
+.btn--danger:hover { background: #6B302A; }
+
+/* Sync banner */
+.sync { display: grid; grid-template-columns: 1fr auto; gap: var(--s-5); align-items: center; padding: var(--s-5) var(--s-6); background: var(--grey-9); color: var(--grey-0); border-radius: var(--r-card); position: relative; overflow: hidden; }
+.sync::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 4px; background: var(--blue); }
+.sync__tag { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--grey-3); display: flex; gap: 6px; align-items: center; }
+.sync__tag svg { width: 14px; height: 14px; color: var(--blue); }
+.sync__nums { display: flex; gap: var(--s-8); margin-top: var(--s-2); flex-wrap: wrap; }
+.sync__nums div { display: flex; align-items: baseline; gap: var(--s-2); }
+.sync__nums b { font-size: 40px; font-weight: 600; letter-spacing: -.02em; line-height: 1; }
+.sync__nums span { font-size: 14px; color: var(--grey-2); }
+.sync__nums .low b { color: #F3E996; }
+
+/* Indicators */
+.ind { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--s-4); margin-top: var(--s-5); }
+.ind .stat { background: var(--grey-0); border: 1px solid var(--grey-2); border-radius: var(--r-card); padding: var(--s-4) var(--s-5); box-shadow: var(--shadow-1); }
+.ind .stat span { font-size: 14px; color: var(--grey-7); font-weight: 500; display: flex; gap: 6px; align-items: center; }
+.ind .stat span svg { width: 16px; height: 16px; color: var(--blue); }
+.ind .stat b { display: block; font-size: 40px; font-weight: 600; letter-spacing: -.03em; line-height: 1.05; margin-top: var(--s-2); }
+.ind .stat small { display: block; font-size: 12px; color: var(--grey-6); margin-top: 4px; }
+.ind .stat.is-bad { border-color: var(--coral-dark); }
+.ind .stat.is-bad small { color: var(--coral-dark); font-weight: 600; }
+
+.row { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: var(--s-5); margin-top: var(--s-6); }
+
+/* Knowledge Map */
+.seg { display: inline-flex; gap: 2px; padding: 3px; background: var(--grey-1); border-radius: var(--r-ctrl); }
+.seg button { height: 34px; padding: 0 var(--s-3); border: 0; border-radius: 6px; background: transparent; font-size: 13px; font-weight: 500; color: var(--grey-7); display: inline-flex; align-items: center; gap: 6px; }
+.seg button svg { width: 15px; height: 15px; }
+.seg button[aria-selected="true"] { background: var(--grey-0); color: var(--grey-9); font-weight: 600; box-shadow: var(--shadow-1); }
+.seg button[aria-selected="true"] svg { color: var(--blue); }
+.km__view { position: relative; min-height: 340px; margin-top: var(--s-4); }
+.km__foot { display: flex; justify-content: space-between; align-items: center; gap: var(--s-3); margin-top: var(--s-3); font-size: 13px; color: var(--grey-6); }
+.km__flag { display: inline-flex; gap: 6px; align-items: center; color: var(--yellow-very-dark); font-weight: 600; }
+.km__flag svg { width: 15px; height: 15px; }
+.tbtn { font-size: 13px; font-weight: 600; color: var(--blue); background: none; border: 0; padding: 0; display: inline-flex; gap: 4px; align-items: center; }
+.tbtn svg { width: 14px; height: 14px; }
+.dtable { width: 100%; border-collapse: collapse; margin-top: var(--s-3); font-size: 13px; }
+.dtable th, .dtable td { text-align: right; padding: 6px 8px; border-bottom: 1px solid var(--grey-1); }
+.dtable th:first-child, .dtable td:first-child { text-align: left; }
+.dtable th { color: var(--grey-6); font-weight: 600; }
+.dtable tr.is-flag td { color: var(--yellow-very-dark); font-weight: 600; }
+.tip { position: absolute; pointer-events: none; background: var(--grey-9); color: var(--grey-0); font-size: 12px; line-height: 1.4; padding: 6px 10px; border-radius: 6px; white-space: nowrap; transform: translate(-50%, calc(-100% - 10px)); opacity: 0; transition: opacity .1s; z-index: 5; }
+.tip b { font-weight: 600; }
+.tip.is-on { opacity: 1; }
+
+/* Ecosystem */
+.eco { display: block; width: 100%; height: auto; overflow: visible; }
+.eco text { font-family: var(--font); pointer-events: none; }
+.eco .node { cursor: pointer; transform-box: fill-box; transform-origin: center; }
+.eco .node:focus { outline: none; }
+.eco .node:focus circle, .eco .node:hover circle { stroke-width: 3; }
+.anim .eco .node { animation: pop .5s cubic-bezier(.2, .9, .3, 1.25) both; animation-delay: var(--d); }
+.anim .eco .link { stroke-dasharray: var(--l); stroke-dashoffset: var(--l); animation: drawl .45s var(--ease-out) forwards; animation-delay: var(--d); }
+@keyframes drawl { to { stroke-dashoffset: 0; } }
+
+/* Bars */
+.bars { display: grid; gap: 2px; }
+.bars__head, .bar { display: grid; grid-template-columns: 140px 1fr 64px 96px; gap: var(--s-3); align-items: center; }
+.bars__head { font-size: 12px; font-weight: 600; color: var(--grey-6); padding-bottom: 6px; }
+.bars__head span:nth-child(3), .bars__head span:nth-child(4), .bar .v, .bar .q { text-align: right; }
+.bar { min-height: 36px; padding: 0 6px; border-radius: 6px; font-size: 14px; cursor: default; }
+.bar:hover, .bar:focus { background: var(--grey-1); outline: none; }
+.bar .track { height: 12px; }
+.bar .track i { display: block; height: 100%; background: var(--blue); border-radius: 0 4px 4px 0; transform-origin: left center; }
+.bar .v { font-size: 13px; color: var(--grey-7); }
+.bar .q { font-weight: 600; }
+.bar.is-flag { background: var(--yellow-very-light); }
+.bar.is-flag .n, .bar.is-flag .q { color: var(--yellow-very-dark); font-weight: 600; }
+.anim .bar .track i { animation: growx .6s var(--ease-out) both; animation-delay: var(--d); }
+.anim .bar .q, .anim .bar .v { animation: fadein .3s ease-out both; animation-delay: calc(var(--d) + 350ms); }
+@keyframes growx { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+
+/* Treemap */
+.tm { position: relative; width: 100%; aspect-ratio: 520 / 300; }
+.tile { position: absolute; border-radius: 6px; padding: 10px; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; cursor: default; background: var(--blue-tint); color: var(--grey-9); transform-origin: center; }
+.tile b { font-weight: 600; font-size: 14px; line-height: 1.2; }
+.tile span { font-weight: 600; font-size: 18px; }
+.tile.big { background: var(--blue); color: var(--grey-0); }
+.tile.big b { font-size: 16px; } .tile.big span { font-size: 26px; }
+.tile.sm { padding: 6px; } .tile.sm b { font-size: 11px; } .tile.sm span { font-size: 12px; }
+.tile.is-flag { background: var(--yellow-very-light); color: var(--yellow-very-dark); box-shadow: inset 0 0 0 1.5px #A7863E; }
+.tile:hover, .tile:focus { outline: none; box-shadow: inset 0 0 0 2px var(--grey-9); }
+.anim .tile { animation: tilein .45s var(--ease-out) both; animation-delay: var(--d); }
+@keyframes tilein { from { opacity: 0; transform: scale(.88); } to { opacity: 1; transform: none; } }
+
+/* Data sources */
+.src { list-style: none; margin: 0; padding: 0; }
+.src li { display: grid; grid-template-columns: 36px 1fr auto; gap: var(--s-3); align-items: center; min-height: 56px; border-top: 1px solid var(--grey-1); }
+.src li:first-child { border-top: 0; }
+.src .ico { width: 36px; height: 36px; border-radius: var(--r-ctrl); background: var(--grey-1); color: var(--grey-7); display: grid; place-items: center; }
+.src .ico svg { width: 18px; height: 18px; }
+.src p { margin: 0; font-weight: 500; font-size: 14px; }
+.src small { display: block; font-size: 12px; color: var(--grey-6); font-weight: 400; }
+.src li.is-bad { background: var(--coral-very-light); margin: 0 calc(var(--s-5) * -1); padding: 0 var(--s-5); }
+.src li.is-busy { background: var(--blue-tint); margin: 0 calc(var(--s-5) * -1); padding: 0 var(--s-5); }
+.status--bad { background: var(--coral-very-light); color: var(--coral-dark); }
+.src li.is-bad .status--bad { background: var(--grey-0); }
+.minibtn { height: 30px; padding: 0 10px; font-size: 12px; font-weight: 600; border-radius: 6px; border: 1px solid var(--grey-3); background: var(--grey-0); color: var(--grey-8); }
+.minibtn:hover { border-color: var(--blue); color: var(--blue); }
+.rec { list-style: none; margin: var(--s-4) 0 0; padding: var(--s-3) var(--s-4); background: var(--grey-1); border-radius: var(--r-ctrl); display: grid; gap: 6px; font-size: 13px; }
+.rec li { display: flex; gap: var(--s-2); align-items: center; color: var(--grey-6); }
+.rec li svg { width: 16px; height: 16px; }
+.rec li.is-active { color: var(--grey-9); font-weight: 500; }
+.rec li.is-active svg { color: var(--blue); }
+.rec li.is-done { color: var(--grey-7); }
+.rec li.is-done svg { color: var(--turquoise-very-dark); }
+
+/* Queue */
+.q { list-style: none; margin: 0; padding: 0; }
+.q li { display: grid; grid-template-columns: 1fr auto 52px 72px; gap: var(--s-3); align-items: center; min-height: 56px; border-top: 1px solid var(--grey-1); }
+.q li:first-child { border-top: 0; }
+.q p { margin: 0; font-weight: 500; font-size: 14px; }
+.q small { display: block; font-size: 12px; color: var(--grey-6); font-weight: 400; }
+.q .status { justify-self: start; }
+.q .conf { font-size: 13px; font-weight: 600; text-align: right; }
+.q .conf.low { color: var(--yellow-very-dark); }
+.q .act { text-align: right; font-size: 14px; font-weight: 600; color: var(--blue); }
+.q .act:hover { text-decoration: underline; text-underline-offset: 3px; }
+.q li.is-done p { color: var(--grey-6); }
+
+/* Insights */
+.ins { display: grid; gap: var(--s-3); }
+.in { padding: var(--s-3) var(--s-4); border-left: 3px solid var(--blue); background: var(--grey-1); border-radius: 0 var(--r-ctrl) var(--r-ctrl) 0; }
+.in.warn { border-left-color: #A7863E; }
+.in p { margin: 0 0 var(--s-2); font-size: 14px; color: var(--grey-8); }
+.in p strong { font-weight: 600; color: var(--grey-9); }
+.in .btn { height: 34px; font-size: 13px; padding: 0 var(--s-3); }
+.btn--soft { background: var(--grey-0); color: var(--blue); border: 1px solid var(--grey-2); }
+.btn--soft:hover { border-color: var(--blue); }
+.in.is-done { opacity: .6; }
+
+@media (max-width: 1180px) { .ind { grid-template-columns: repeat(2, 1fr); } .row { grid-template-columns: 1fr; } .sync, .alert { grid-template-columns: 1fr; } .q li { grid-template-columns: 1fr auto; } .q .conf, .q .status { display: none; } }
+</style>
+</head>
+<body data-page="health">
+<div class="app">
+  <nav class="nav" id="nav" aria-label="Principal"></nav>
+
+  <main class="main">
+    <div class="greet">
+      <p><strong>Buenos días, Laura.</strong> <span id="greet-sub">Esto es lo que ha entrado durante la noche.</span></p>
+      <span class="greet__time num"><i data-lucide="clock-3" style="width:16px;height:16px"></i><span id="clock">Martes, 6 de octubre · 08:30</span></span>
+    </div>
+    <h1 class="hq">¿Está nuestro conocimiento preparado para <span>responder correctamente</span>?</h1>
+
+    <div id="alert-slot"></div>
+
+    <!-- Sync banner -->
+    <section class="sync" aria-labelledby="sync-tag" id="sync">
+      <div>
+        <span class="sync__tag" id="sync-tag"><i data-lucide="refresh-cw"></i>Sincronización nocturna · SharePoint, Asana y 4 fuentes externas</span>
+        <div class="sync__nums">
+          <div><b class="num">42</b><span>documentos nuevos</span></div>
+          <div><b class="num">39</b><span>clasificados por la IA</span></div>
+          <div class="low"><b class="num" id="low-n">3</b><span id="low-t">con baja confianza</span></div>
+        </div>
+      </div>
+      <a class="btn btn--primary" href="laura-revision.html" id="sync-btn"><i data-lucide="list-checks"></i>Abrir cola de revisión</a>
+    </section>
+
+    <!-- Indicators -->
+    <section class="ind" aria-label="Indicadores principales">
+      <div class="stat"><span><i data-lucide="gauge"></i>Calidad del repositorio</span><b class="num">96%</b><small>Sube 1 pt esta semana</small></div>
+      <div class="stat"><span><i data-lucide="list-checks"></i>Pendientes de validar</span><b class="num" id="i-pend">27</b><small id="i-pend-s">3 de esta noche</small></div>
+      <div class="stat"><span><i data-lucide="calendar-clock"></i>Próximos a caducar</span><b class="num">14</b><small>En los próximos 30 días</small></div>
+      <div class="stat" id="i-con"><span><i data-lucide="plug"></i>Conectores activos</span><b class="num" id="i-con-n">32</b><small id="i-con-s">Todos sincronizando</small></div>
+      <div class="stat"><span><i data-lucide="timer"></i>SLA cumplido</span><b class="num">99,8%</b><small>Últimos 30 días</small></div>
+    </section>
+
+    <!-- Map + sources -->
+    <div class="row">
+      <section class="panel" aria-labelledby="km-title" style="position:relative">
+        <div class="panel__head">
+          <h2 id="km-title"><i data-lucide="network"></i>Knowledge Map</h2>
+          <div class="seg" role="tablist" aria-label="Tipo de visualización" id="seg">
+            <button role="tab" type="button" data-v="eco" aria-selected="true"><i data-lucide="orbit"></i>Ecosistema</button>
+            <button role="tab" type="button" data-v="bars" aria-selected="false" tabindex="-1"><i data-lucide="chart-bar"></i>Barras</button>
+            <button role="tab" type="button" data-v="tm" aria-selected="false" tabindex="-1"><i data-lucide="layout-grid"></i>Treemap</button>
+          </div>
+        </div>
+        <div class="km__view anim" id="km" role="tabpanel" aria-label="Distribución del conocimiento por área"></div>
+        <div class="tip" id="tip"></div>
+        <div class="km__foot">
+          <span class="km__flag"><i data-lucide="triangle-alert"></i>Marca · 12 % de documentos sin owner</span>
+          <span>15.940 documentos · 8 áreas · <button class="tbtn" type="button" id="tbtn" aria-expanded="false"><i data-lucide="table"></i>Ver tabla</button></span>
+        </div>
+        <table class="dtable" id="tbl" hidden><thead><tr><th>Área</th><th>Documentos</th><th>Metadatos OK</th></tr></thead><tbody></tbody></table>
+      </section>
+
+      <section class="panel" aria-labelledby="src-title">
+        <div class="panel__head"><h2 id="src-title"><i data-lucide="plug"></i>Data Sources</h2><span class="panel__meta" id="src-meta">32 conectores</span></div>
+        <ul class="src" id="src">
+          <li><span class="ico"><i data-lucide="folder-tree"></i></span><p>SharePoint<small>18.230 elementos</small></p><span class="status status--ok"><i data-lucide="check"></i>Hace 5 min</span></li>
+          <li><span class="ico"><i data-lucide="kanban"></i></span><p>Asana<small>2.410 tareas y adjuntos</small></p><span class="status status--ok"><i data-lucide="check"></i>Hace 12 min</span></li>
+          <li id="sl"><span class="ico"><i data-lucide="radio-tower"></i></span><p>Social Listening<small id="sl-sub">Menciones en medios y redes</small></p><span id="sl-st" class="status status--ok"><i data-lucide="check"></i>Hace 3 min</span></li>
+          <li><span class="ico"><i data-lucide="database"></i></span><p>SIC<small>Sistema de información comercial</small></p><span class="status status--warn"><i data-lucide="circle-alert"></i>Lenta · 2 h</span></li>
+          <li id="ext"><span class="ico"><i data-lucide="globe"></i></span><p>Informes externos<small>Analistas y consultoras</small></p><button class="minibtn" type="button" id="ext-btn">Sincronizar</button></li>
+        </ul>
+        <div id="rec-slot"></div>
+      </section>
+    </div>
+
+    <!-- Queue + insights -->
+    <div class="row">
+      <section class="panel" aria-labelledby="q-title">
+        <div class="panel__head"><h2 id="q-title"><i data-lucide="list-checks"></i>AI Validation Queue</h2><span class="panel__meta">Priorizada por impacto · la IA propone, tú validas</span></div>
+        <ul class="q" id="queue">
+          <li><p>Nota de prensa · Despliegue 5G en Andalucía<small>SharePoint · Comunicación · esta noche</small></p><span class="status status--info"><i data-lucide="sparkles"></i>Propuesta lista</span><span class="conf num">96 %</span><a class="act" href="laura-revision.html?doc=1">Validar</a></li>
+          <li><p>Plan de Comunicación 2027<small>SharePoint · Comunicación · esta noche</small></p><span class="status status--info"><i data-lucide="copy"></i>Duplicado detectado</span><span class="conf num">94 %</span><a class="act" href="laura-revision.html?doc=2">Fusionar</a></li>
+          <li><p>Resultados Q2 LATAM<small>Fuente externa · esta noche</small></p><span class="status status--warn"><i data-lucide="circle-alert"></i>Metadatos incompletos</span><span class="conf low num">58 %</span><a class="act" href="laura-revision.html?doc=3">Revisar</a></li>
+          <li><p>Informe Competencia Alemania<small>Asana · Estrategia · ayer</small></p><span class="status status--bad"><i data-lucide="user-x"></i>Owner desconocido</span><span class="conf low num">—</span><a class="act" href="#" data-soon>Asignar</a></li>
+        </ul>
+      </section>
+
+      <section class="panel" aria-labelledby="ins-title">
+        <div class="panel__head"><h2 id="ins-title"><i data-lucide="sparkles"></i>Knowledge Insights</h2></div>
+        <div class="ins">
+          <div class="in"><p>He detectado <strong>15 documentos</strong> con contenido muy similar. ¿Quieres consolidarlos?</p><button class="btn btn--soft" type="button" data-ins="15 documentos consolidados en 4 versiones oficiales"><i data-lucide="combine"></i>Consolidar</button></div>
+          <div class="in"><p>El informe <strong>«Mercado Brasil»</strong> perderá vigencia en 3 días. Existe una versión más reciente disponible.</p><button class="btn btn--soft" type="button" data-ins="«Mercado Brasil» sustituido por la versión de septiembre"><i data-lucide="replace"></i>Sustituir versión</button></div>
+          <div class="in warn"><p>El <strong>12 %</strong> de los documentos del área de Marca no tienen asignado un owner.</p><button class="btn btn--soft" type="button" data-ins="La IA ha propuesto owner para 141 documentos de Marca"><i data-lucide="user-plus"></i>Proponer owners</button></div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<script src="assets/laura.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script>
+  const $ = id => document.getElementById(id);
+  const fmt = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  const AREAS = [
+    { n: 'Social Listening', s: 'Social Listening', d: 4870, q: 98, eco: [140, 110, 70], tm: [0, 0, 270, 174] },
+    { n: 'Comunicación', s: 'Comunicación', d: 3420, q: 97, eco: [420, 110, 59], tm: [0, 176, 270, 124] },
+    { n: 'Clientes', s: 'Clientes', d: 2260, q: 96, eco: [430, 256, 48], tm: [272, 0, 146, 147] },
+    { n: 'Competencia', s: 'Competencia', d: 1540, q: 95, eco: [320, 292, 39], tm: [420, 0, 100, 147] },
+    { n: 'Marca', s: 'Marca', d: 1180, q: 88, flag: true, eco: [188, 282, 35], tm: [272, 149, 75, 151] },
+    { n: 'Investigación', s: 'Investig.', d: 1120, q: 97, eco: [92, 222, 34], tm: [349, 149, 71, 151] },
+    { n: 'RRHH', s: 'RRHH', d: 910, q: 99, eco: [492, 184, 30], tm: [422, 149, 57, 151] },
+    { n: 'Gabinete', s: 'Gabinete', d: 640, q: 96, eco: [246, 60, 25], tm: [481, 149, 39, 151] },
+  ];
+  const km = $('km'), tip = $('tip');
+  const tipText = a => `<b>${a.n}</b> · ${fmt(a.d)} documentos · metadatos OK ${a.q} %${a.flag ? ' · 12 % sin owner' : ''}`;
+  function bindTip(el, a) {
+    const show = () => {
+      const r = el.getBoundingClientRect(), p = km.parentElement.getBoundingClientRect();
+      tip.innerHTML = tipText(a);
+      tip.style.left = (r.left - p.left + r.width / 2) + 'px'; tip.style.top = (r.top - p.top) + 'px';
+      tip.classList.add('is-on');
+    };
+    const hide = () => tip.classList.remove('is-on');
+    el.addEventListener('mouseenter', show); el.addEventListener('focus', show);
+    el.addEventListener('mouseleave', hide); el.addEventListener('blur', hide);
+  }
+
+  function renderEco() {
+    const NS = 'http://www.w3.org/2000/svg', C = [280, 172];
+    let svg = `<svg class="eco" viewBox="0 0 560 340" role="img" aria-label="Ecosistema de conocimiento con el agente SSoT en el centro">`;
+    AREAS.forEach((a, i) => {
+      const [x, y] = a.eco, l = Math.hypot(x - C[0], y - C[1]).toFixed(0);
+      svg += `<line class="link" x1="${C[0]}" y1="${C[1]}" x2="${x}" y2="${y}" stroke="${a.flag ? '#A7863E' : '#D1D5E4'}" stroke-width="1.5" ${a.flag ? 'stroke-dasharray="4 4"' : ''} style="--l:${l};--d:${120 + i * 40}ms"/>`;
+    });
+    AREAS.forEach((a, i) => {
+      const [x, y, r] = a.eco, big = i < 2;
+      const fill = a.flag ? '#FCF7DB' : big ? '#0066FF' : '#EBF2FF', stroke = a.flag ? '#A7863E' : '#0066FF', ink = big ? '#FFFFFF' : a.flag ? '#473515' : '#031A34';
+      const fs = r > 55 ? 15 : r > 40 ? 13 : r > 30 ? 11 : 10;
+      svg += `<g class="node" tabindex="0" data-i="${i}" style="--d:${450 + i * 70}ms" role="img" aria-label="${a.n}: ${fmt(a.d)} documentos">
+        <circle cx="${x}" cy="${y}" r="${r}" fill="${fill}" stroke="${stroke}" stroke-width="1.5" ${a.flag ? 'stroke-dasharray="4 3"' : ''}/>
+        <text x="${x}" y="${y - 2}" text-anchor="middle" font-size="${fs}" font-weight="600" fill="${ink}">${a.flag ? '! ' : ''}${r < 33 ? a.s.replace('Gabinete', 'Gab.') : a.s}</text>
+        <text x="${x}" y="${y + fs + 3}" text-anchor="middle" font-size="${fs + (big ? 5 : 2)}" font-weight="600" fill="${ink}">${fmt(a.d)}</text></g>`;
+    });
+    svg += `<g class="node" style="--d:0ms" role="img" aria-label="Agente SSoT"><circle cx="${C[0]}" cy="${C[1]}" r="44" fill="#EBF2FF"/><circle cx="${C[0]}" cy="${C[1]}" r="38" fill="#031A34"/><text x="${C[0]}" y="${C[1] - 3}" text-anchor="middle" font-size="10" font-weight="600" letter-spacing=".08em" fill="#B0B6CA">AGENTE</text><text x="${C[0]}" y="${C[1] + 13}" text-anchor="middle" font-size="14" font-weight="600" fill="#FFFFFF">SSoT</text></g></svg>`;
+    km.innerHTML = svg;
+    km.querySelectorAll('.node[data-i]').forEach(n => bindTip(n, AREAS[+n.dataset.i]));
+  }
+  function renderBars() {
+    const max = AREAS[0].d;
+    km.innerHTML = `<div class="bars"><div class="bars__head"><span>Área</span><span>Documentos</span><span></span><span>Metadatos OK</span></div>${AREAS.map((a, i) => `
+      <div class="bar ${a.flag ? 'is-flag' : ''}" tabindex="0" data-i="${i}" style="--d:${i * 60}ms"><span class="n">${a.flag ? '! ' : ''}${a.n}</span><span class="track"><i style="width:${(a.d / max * 100).toFixed(1)}%"></i></span><span class="v num">${fmt(a.d)}</span><span class="q num">${a.q} %</span></div>`).join('')}</div>`;
+    km.querySelectorAll('.bar').forEach(b => bindTip(b, AREAS[+b.dataset.i]));
+  }
+  function renderTm() {
+    km.innerHTML = `<div class="tm">${AREAS.map((a, i) => {
+      const [x, y, w, h] = a.tm, cls = i < 2 ? 'big' : w < 80 ? 'sm' : '';
+      return `<div class="tile ${cls} ${a.flag ? 'is-flag' : ''}" tabindex="0" data-i="${i}" style="left:${x / 5.2}%;top:${y / 3}%;width:${w / 5.2}%;height:${h / 3}%;--d:${i * 70}ms"><b>${a.flag ? '! ' : ''}${w < 80 ? a.s.replace('Gabinete', 'Gab.') : a.n}</b><span class="num">${fmt(a.d)}</span></div>`;
+    }).join('')}</div>`;
+    km.querySelectorAll('.tile').forEach(t => bindTip(t, AREAS[+t.dataset.i]));
+  }
+  const views = { eco: renderEco, bars: renderBars, tm: renderTm };
+  function show(v) {
+    tip.classList.remove('is-on');
+    km.classList.remove('anim'); views[v](); void km.offsetWidth; if (!reduceMotion) km.classList.add('anim');
+    document.querySelectorAll('#seg button').forEach(b => { const on = b.dataset.v === v; b.setAttribute('aria-selected', on); b.tabIndex = on ? 0 : -1; });
+  }
+  const segBtns = [...document.querySelectorAll('#seg button')];
+  segBtns.forEach((b, i) => {
+    b.addEventListener('click', () => show(b.dataset.v));
+    b.addEventListener('keydown', e => {
+      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+      const n = segBtns[(i + (e.key === 'ArrowRight' ? 1 : segBtns.length - 1)) % segBtns.length]; n.focus(); show(n.dataset.v);
+    });
+  });
+  document.querySelector('#tbl tbody').innerHTML = AREAS.map(a => `<tr class="${a.flag ? 'is-flag' : ''}"><td>${a.n}</td><td class="num">${fmt(a.d)}</td><td class="num">${a.q} %</td></tr>`).join('');
+  $('tbtn').addEventListener('click', () => { const t = $('tbl'); t.hidden = !t.hidden; $('tbtn').setAttribute('aria-expanded', !t.hidden); $('tbtn').lastChild.textContent = t.hidden ? 'Ver tabla' : 'Ocultar tabla'; });
+  show('eco');
+
+  // Insights
+  document.querySelectorAll('[data-ins]').forEach(b => b.addEventListener('click', () => {
+    b.closest('.in').classList.add('is-done'); b.disabled = true; b.innerHTML = '<i data-lucide="check"></i>Hecho'; draw(); showToast(b.dataset.ins);
+  }));
+  // External reports sync
+  $('ext-btn').addEventListener('click', () => {
+    const b = $('ext-btn'); b.disabled = true; b.innerHTML = 'Sincronizando…';
+    setTimeout(() => { b.outerHTML = '<span class="status status--ok"><i data-lucide="check"></i>Ahora</span>'; draw(); showToast('Informes externos sincronizados · 6 documentos nuevos en la cola'); }, reduceMotion ? 0 : 1200);
+  });
+
+  // ---- After the review queue: mid-morning state + Social Listening alert ----
+  if (new URLSearchParams(location.search).has('done')) {
+    $('clock').textContent = 'Martes, 6 de octubre · 11:40';
+    $('greet-sub').textContent = 'Has revisado los 3 documentos de baja confianza.';
+    $('low-n').textContent = '0'; $('low-t').textContent = 'pendientes de esta noche';
+    $('sync-tag').lastChild.textContent = 'Revisión de esta noche completada';
+    $('sync-btn').innerHTML = '<i data-lucide="list-checks"></i>Ver cola (24)';
+    $('i-pend').textContent = '24'; $('i-pend-s').textContent = 'Los 3 de esta noche, resueltos';
+    const badge = document.getElementById('nav-badge'); if (badge) badge.textContent = '24';
+    document.querySelectorAll('#queue li').forEach((li, i) => { if (i < 3) { li.classList.add('is-done'); li.querySelector('.status').outerHTML = '<span class="status status--ok"><i data-lucide="check"></i>Validado</span>'; li.querySelector('.act').outerHTML = '<span class="act" style="color:var(--grey-6)">Hecho</span>'; } });
+    // Social Listening broken
+    $('sl').classList.add('is-bad'); $('sl-sub').textContent = 'Último dato recibido: ayer, 23:40';
+    $('sl-st').className = 'status status--bad'; $('sl-st').innerHTML = '<i data-lucide="x"></i>Sin datos · 12 h';
+    $('i-con').classList.add('is-bad'); $('i-con-n').textContent = '31'; $('i-con-s').textContent = 'Social Listening sin datos';
+    $('src-meta').textContent = '31 de 32 al día';
+    $('alert-slot').innerHTML = `<section class="alert" id="alert" aria-live="polite">
+      <i data-lucide="radio-tower"></i>
+      <div><span class="alert__tag" id="alert-tag">Recomendación del agente · 11:38</span>
+        <p id="alert-p">La conexión con la herramienta de <strong>Social Listening no recibe datos desde hace 12 horas</strong>. Algunas respuestas del agente podrían verse afectadas.</p></div>
+      <div class="alert__act" id="alert-act"><button class="btn btn--danger" type="button" id="fix"><i data-lucide="plug-zap"></i>Reconectar</button><button class="btn btn--ghost" type="button" data-soon="Detalle del conector (próximamente)">Ver detalle</button></div>
+    </section>`;
+    draw();
+    $('fix').addEventListener('click', reconnect);
+  }
+
+  async function reconnect() {
+    const wait = ms => new Promise(r => setTimeout(r, reduceMotion ? 0 : ms));
+    const al = $('alert'); al.className = 'alert is-busy';
+    al.firstElementChild.outerHTML = '<i data-lucide="loader-circle" class="spin"></i>';
+    $('alert-tag').textContent = 'Reconectando Social Listening';
+    $('alert-act').innerHTML = '';
+    $('sl').classList.replace('is-bad', 'is-busy'); $('sl-st').className = 'status status--info'; $('sl-st').innerHTML = '<i data-lucide="loader-circle" class="spin"></i>Reconectando';
+    const steps = ['Comprobando credenciales', 'Token caducado: renovando acceso', 'Recuperando 12 h de datos · 1.284 menciones', 'Reindexando para el agente'];
+    $('rec-slot').innerHTML = `<ol class="rec" id="rec">${steps.map(s => `<li><i data-lucide="circle"></i>${s}</li>`).join('')}</ol>`;
+    draw();
+    const lis = [...document.querySelectorAll('#rec li')];
+    for (let i = 0; i < lis.length; i++) {
+      lis[i].className = 'is-active'; lis[i].firstElementChild.outerHTML = '<i data-lucide="loader-circle" class="spin"></i>';
+      $('alert-p').textContent = steps[i] + '…'; draw();
+      await wait(800);
+      lis[i].className = 'is-done'; lis[i].firstElementChild.outerHTML = '<i data-lucide="circle-check"></i>'; draw();
+    }
+    al.className = 'alert is-ok'; al.firstElementChild.outerHTML = '<i data-lucide="circle-check"></i>';
+    $('alert-tag').textContent = 'Resuelto · 11:41';
+    $('alert-p').innerHTML = '<strong>Social Listening vuelve a estar al día.</strong> Se han recuperado 1.284 menciones; el agente ya responde con datos completos.';
+    $('sl').classList.remove('is-busy'); $('sl-sub').textContent = '1.284 menciones recuperadas'; $('sl-st').className = 'status status--ok'; $('sl-st').innerHTML = '<i data-lucide="check"></i>Ahora';
+    $('i-con').classList.remove('is-bad'); $('i-con-n').textContent = '32'; $('i-con-s').textContent = 'Todos sincronizando'; $('src-meta').textContent = '32 conectores';
+    draw(); showToast('Conexión restablecida antes de afectar a los usuarios');
+  }
+</script>
+</body>
+</html>
