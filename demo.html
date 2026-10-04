@@ -5,12 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SSoT · Demo</title>
 <link rel="stylesheet" href="assets/ssot.css">
+<script src="assets/anon.js"></script>
+<script src="assets/manual.js"></script>
 <style>
 body { background: var(--grey-9); color: var(--grey-0); }
 .card { min-height: 100vh; display: grid; align-content: center; padding: 0 10vw; position: relative; overflow: hidden; }
 .card::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 8px; background: var(--blue); }
 .brand { display: flex; align-items: center; gap: var(--s-4); animation: rise .5s var(--ease-out) both; }
 .brand img { height: 40px; width: auto; }
+.brand.brand--anon span { padding-left: 0; border-left: 0; font-size: 28px; }
 .brand span { font-weight: 600; font-size: 20px; letter-spacing: .08em; color: var(--grey-0); padding-left: var(--s-4); border-left: 1px solid var(--grey-6); }
 h1 { margin: var(--s-10) 0 0; font-size: 88px; line-height: 1.02; font-weight: 500; letter-spacing: -.035em; max-width: 14ch; animation: rise .6s var(--ease-out) .15s both; }
 h1 em { font-style: normal; color: var(--blue); }
@@ -34,6 +37,18 @@ h1 em { font-style: normal; color: var(--blue); }
 .expect span { display: block; font-size: 14px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--grey-3); margin-bottom: var(--s-2); }
 .expect p { margin: 0; font-size: 22px; line-height: 1.5; color: var(--grey-1); }
 @media (max-width: 1000px) { h1 { font-size: 56px; } .q { font-size: 24px; } .roles { grid-template-columns: repeat(2, 1fr); } }
+
+/* Closing cover */
+.h-end { margin: var(--s-3) 0 0; font-size: 64px; max-width: 18ch; }
+.results { list-style: none; margin: var(--s-10) 0 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--s-6); max-width: 1180px; }
+.results li { padding-top: var(--s-4); border-top: 2px solid var(--blue); display: flex; flex-direction: column; animation: rise .5s var(--ease-out) both; animation-delay: calc(.4s + var(--i) * .15s); }
+.results .who-s { font-size: 15px; color: var(--grey-3); }
+.results .who-s b { color: var(--grey-0); font-weight: 600; font-size: 18px; }
+.results .big { margin-top: var(--s-4); font-size: 72px; line-height: 1; font-weight: 600; letter-spacing: -.035em; }
+.results .txt { margin-top: var(--s-3); font-size: 17px; line-height: 1.45; color: var(--grey-2); max-width: 24ch; }
+.results .val { margin-top: var(--s-4); font-size: 13px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--grey-3); }
+.sign { margin: var(--s-10) 0 0; font-size: 20px; color: var(--grey-1); animation: rise .6s var(--ease-out) 1.1s both; }
+@media (max-width: 1000px) { .results { grid-template-columns: repeat(2, 1fr); } .h-end { font-size: 44px; } }
 </style>
 </head>
 <body>
@@ -43,6 +58,8 @@ h1 em { font-style: normal; color: var(--blue); }
   const params = new URLSearchParams(location.search);
   const fin = params.get('fin') === '1';
   const p = params.get('p');
+  // ?anon=1: anonymised covers, no client logo or name
+  const anon = params.get('anon') === '1' || !!window.SSOT_ANON;
   const ROLES = [
     { k: 'maria', n: 'María', r: 'Crea conocimiento', v: 'Productividad' },
     { k: 'javier', n: 'Javier', r: 'Gobierna la marca', v: 'Consistencia' },
@@ -56,7 +73,7 @@ h1 em { font-style: normal; color: var(--blue); }
       expect: 'Convertir información dispersa en mensajes claros para Dirección y prensa en minutos, con cada dato respaldado por su fuente.' },
     javier: { name: 'Javier Martín', role: 'Brand & Content Governance Lead', area: 'Marca Corporativa',
       q: '¿Está la IA representando correctamente nuestra marca?',
-      expect: 'Que todo lo que genere la IA suene y se vea como Telefónica, y poder enseñarle las reglas de marca sin programar.' },
+      expect: `Que todo lo que genere la IA suene y se vea como ${anon ? 'la marca' : 'Telefónica'}, y poder enseñarle las reglas de marca sin programar.` },
     laura: { name: 'Laura Pérez', role: 'Knowledge & Metadata Manager', area: 'Gestión del Conocimiento',
       q: '¿Está nuestro conocimiento preparado para responder correctamente?',
       expect: 'Que la IA encuentre siempre la información correcta, actualizada y bien clasificada, sin tener que revisarlo todo a mano.' },
@@ -65,7 +82,9 @@ h1 em { font-style: normal; color: var(--blue); }
       expect: 'Saber quién accede a qué información y con qué permisos, y detectar cualquier riesgo antes de que sea un problema.' },
   };
   const list = (on, dim) => `<ul class="roles${dim ? ' dim' : ''}">${ROLES.map((r, i) => `<li class="${on === 'all' || on === r.k ? 'on' : ''}" style="--i:${i}"><b>${r.n}</b><span>${r.r}</span><strong>${r.v}</strong></li>`).join('')}</ul>`;
-  const brand = '<div class="brand"><img src="assets/logo-white-horizontal.png" alt="Telefónica"><span>SSoT</span></div>';
+  const brand = anon
+    ? '<div class="brand brand--anon"><span>SSoT</span></div>'
+    : '<div class="brand"><img src="assets/logo-white-horizontal.png" alt="Telefónica"><span>SSoT</span></div>';
   let html;
   if (p && PERSONAS[p]) {
     const P = PERSONAS[p], i = ROLES.findIndex(r => r.k === p);
@@ -77,17 +96,34 @@ h1 em { font-style: normal; color: var(--blue); }
       <div class="expect"><span>Qué espera del SSoT</span><p>${P.expect}</p></div>
       ${list(p, true)}`;
   } else if (fin) {
+    // Closing cover: what each person got done in the demo (figures from the prototype screens)
+    const RESULTS = [
+      { n: 'María', r: 'Comunicación', big: '6', t: 'fuentes citadas en su briefing para Dirección', v: 'Productividad' },
+      { n: 'Javier', r: 'Marca', big: '98 %', t: 'de alineación con la marca tras entrenar al agente', v: 'Consistencia' },
+      { n: 'Laura', r: 'Conocimiento', big: '1.284', t: 'menciones recuperadas al reconectar Social Listening', v: 'Calidad' },
+      { n: 'Carlos', r: 'Gobierno', big: '0', t: 'alertas abiertas, con el informe semanal ya en el Comité', v: 'Confianza' },
+    ];
     html = `${brand}
-      <h1>Cada perfil aporta su parte al <em>mismo conocimiento</em>.</h1>
-      <p class="lead">Información útil, coherente y segura para toda la organización, desde una única fuente de verdad.</p>
-      ${list('all')}`;
+      <p class="kick">Un día en el SSoT</p>
+      <h1 class="h-end">Cuatro personas, <em>un mismo conocimiento</em>.</h1>
+      <ul class="results">${RESULTS.map((x, i) => `<li style="--i:${i}">
+        <span class="who-s"><b>${x.n}</b> · ${x.r}</span>
+        <span class="big num">${x.big}</span>
+        <span class="txt">${x.t}</span>
+        <span class="val">${x.v}</span></li>`).join('')}</ul>
+      <p class="sign">Una única fuente de verdad, y cada perfil sabe qué hacer con ella.</p>`;
   } else {
     html = `${brand}
-      <h1>Una única <em>fuente de verdad</em> para Telefónica.</h1>
+      <h1>Una única <em>fuente de verdad</em> para ${anon ? 'toda la compañía' : 'Telefónica'}.</h1>
       <p class="lead">El SSoT reúne todo el conocimiento de la compañía en un único sitio de confianza. Cada respuesta de la IA cita sus fuentes, y cada perfil tiene una Home pensada para la pregunta que se hace cada día.</p>
       ${list()}`;
   }
   document.getElementById('card').innerHTML = html;
+  // Manual recording mode (?manual=1): one click anywhere moves on
+  if (window.SSOT_MANUAL && !fin) {
+    const next = p && PERSONAS[p] ? window.SSOT_HOME[p] : 'demo.html?p=maria';
+    document.addEventListener('click', () => { location.href = next; });
+  }
 })();
 </script>
 </body>

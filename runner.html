@@ -5,7 +5,7 @@
 <title>SSoT · Runner</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-  html, body { margin: 0; height: 100%; background: #0b1b3b; overflow: hidden; }
+  html, body { margin: 0; height: 100%; background: #0b1b3b; overflow: hidden; cursor: none; }
   iframe { position: fixed; inset: 0; width: 100vw; height: 100vh; border: 0; background: #fff; }
   /* Real macOS cursors (exported from AppKit): arrow while moving, pointing hand over a button */
   #cur { position: fixed; left: 0; top: 0; z-index: 9; pointer-events: none;
@@ -28,14 +28,35 @@
 <iframe id="f" title="Prototipo"></iframe>
 <div id="cur" aria-hidden="true"><img class="arrow" src="assets/cursor-arrow.png" alt=""><img class="hand" src="assets/cursor-hand.png" alt=""></div>
 <script>
-const PAUSA = 1500;
+const PAUSA = 3000;        // pausa en cada pantalla clave
+const PAUSA_FINAL = 5000;  // última pantalla de cada perfil
 const BASE = location.origin + '/';
+// runner.html?anon=1 → anonymised version: covers and screens without client logos or names
+const ANON = new URLSearchParams(location.search).get('anon') === '1';
 const F = document.getElementById('f');
+// Hide the real system cursor inside every page the iframe loads; only the drawn cursor shows
+// Prepare every page the iframe shows as soon as its body exists (also pages that navigate by themselves):
+// hide the real cursor. Anonymous mode is handled by assets/anon.js in each page.
+let preparedDoc = null;
+(function watch() {
+  const d = F.contentDocument;
+  if (d && d !== preparedDoc && d.body && d.head) {
+    preparedDoc = d;
+    try {
+      const st = d.createElement('style');
+      st.textContent = '*, *::before, *::after { cursor: none !important; }';
+      d.head.appendChild(st);
+    } catch (e) {}
+  }
+  requestAnimationFrame(watch);
+})();
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const D = () => F.contentDocument;
 const W = () => F.contentWindow;
 
 function go(u) {
+  // Covers carry the flag: anon=1 switches anonymous mode on for the tab, anon=0 clears it from an earlier run
+  if (u.startsWith('demo.html')) u += (u.includes('?') ? '&' : '?') + 'anon=' + (ANON ? '1' : '0') + '&manual=0';
   return new Promise(r => { F.onload = () => r(); F.src = BASE + u; });
 }
 async function waitFor(fn, t = 10000) {
@@ -83,8 +104,9 @@ async function click(txt, exact) {
   await clickEl(b);
 }
 const pausa = () => sleep(PAUSA);
+const pausaFinal = () => sleep(PAUSA_FINAL);
 // Covers: wait until the last line has animated in, then hold so it can be read
-const LEER_PORTADA = 7000, LEER_PERSONA = 6000;
+const LEER_PORTADA = 3000, LEER_PERSONA = 3000;
 async function cover(u, ms) {
   await go(u);
   await waitFor(() => { const e = q('.roles li:nth-child(4)'); return e && getComputedStyle(e).opacity > 0.4; });
@@ -113,7 +135,7 @@ async function run() {
   await sleep(300);
   await click('Aplicar', true);
   await waitFor(() => q('.toast.is-on'));
-  await pausa();
+  await pausaFinal(); // último plano del perfil
   // 6 · Javier
   await cover('demo.html?p=javier', LEER_PERSONA);
   await go('javier.html');
@@ -129,7 +151,7 @@ async function run() {
   await go('javier-training.html');
   await click('Entrenar agente');
   await waitFor(() => /v15 activa/.test(D().body.innerText), 15000);
-  await pausa();
+  await pausaFinal(); // último plano del perfil
   // 9 · Laura
   await cover('demo.html?p=laura', LEER_PERSONA);
   await go('laura.html');
@@ -149,7 +171,7 @@ async function run() {
   await go('laura.html?done=1');
   await click('Reconectar', true);
   await waitFor(() => q('.alert.is-ok'));
-  await pausa();
+  await pausaFinal(); // último plano del perfil
   // 12 · Carlos
   await cover('demo.html?p=carlos', LEER_PERSONA);
   await go('carlos.html');
@@ -185,10 +207,10 @@ async function run() {
   const env = await waitFor(() => [...D().querySelectorAll('.sendbox button')].find(x => x.textContent.trim() === 'Enviar'));
   await clickEl(env);
   await waitFor(() => q('.sendbox.is-done'));
-  await pausa();
+  await pausaFinal(); // último plano del perfil
   // 18
   await go('demo.html?fin=1');
-  await waitFor(() => { const e = q('.roles li:nth-child(4)'); return e && getComputedStyle(e).opacity > 0.95; });
+  await waitFor(() => { const e = q('.sign'); return e && getComputedStyle(e).opacity > 0.95; });
   await pausa();
 }
 
