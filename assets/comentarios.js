@@ -6,6 +6,9 @@
 (function () {
   const REPO = 'titox/telefonica-ssot-prototype';
   const LABEL = 'comentario';
+  const LOGIN = 'https://github.com/login';
+  // After signing in, GitHub sends the reviewer straight to the pre-filled issue
+  const loginTo = url => `${LOGIN}?return_to=${encodeURIComponent(url.replace('https://github.com', ''))}`;
 
   const q = new URLSearchParams(location.search);
   if (q.get('comentarios') === '0' || window.top !== window) return;
@@ -88,6 +91,11 @@
   .cm-primary { border: 0; background: var(--blue); color: var(--grey-0) !important; }
   .cm-primary:hover { background: var(--blue-press); }
   .cm-primary:disabled { background: var(--grey-2); color: var(--grey-6) !important; cursor: not-allowed !important; }
+  .cm-login { right: var(--s-6); bottom: 88px; }
+  .cm-login p { margin: 0 0 var(--s-4); }
+  .cm-login .cm-actions { flex-direction: column-reverse; }
+  .cm-login .cm-actions > * { width: 100%; justify-content: center; }
+  .cm-hint a { color: var(--blue); font-weight: 600; text-decoration: underline; }
   .cm-toast { position: fixed; left: 50%; bottom: 88px; transform: translate(-50%, 8px); opacity: 0; z-index: 9001; max-width: 520px;
     display: flex; align-items: flex-start; gap: var(--s-3); padding: var(--s-3) var(--s-4); border-radius: var(--r-card);
     background: var(--grey-9); color: var(--grey-0); box-shadow: var(--shadow-2); transition: opacity .2s var(--ease-out), transform .2s var(--ease-out); pointer-events: none; }
@@ -124,7 +132,7 @@
         <p class="cm-ctx"></p>
         <label for="cm-text">Tu comentario</label>
         <textarea id="cm-text" placeholder="Qué cambiarías y por qué"></textarea>
-        <p class="cm-hint">Se abre GitHub con todo relleno. Solo tienes que pulsar «Create».</p>
+        <p class="cm-hint">Se abre GitHub con todo relleno. Solo tienes que pulsar «Create». Necesitas haber <a href="${LOGIN}" target="_blank" rel="noopener">iniciado sesión en GitHub</a>.</p>
         <div class="cm-actions">
           <button type="button" class="cm-ghost cm-cancel">Cancelar</button>
           <button type="submit" class="cm-primary cm-send" disabled>${ICON('external-link')}Abrir en GitHub</button>
@@ -137,6 +145,14 @@
         <div class="cm-actions">
           <button type="button" class="cm-ghost cm-remove">Quitar marca</button>
           <a class="cm-primary cm-gh" target="_blank" rel="noopener">${ICON('external-link')}Ver en GitHub</a>
+        </div>
+      </div>
+      <div class="cm-card cm-login" role="dialog" aria-labelledby="cm-login-title">
+        <h2 id="cm-login-title">Antes de comentar</h2>
+        <p>Para comentar necesitas iniciar sesión en GitHub con tu cuenta. Si no lo haces, GitHub mostrará «Page not found» al enviar.</p>
+        <div class="cm-actions">
+          <button type="button" class="cm-ghost cm-login-ok">Ya he iniciado sesión</button>
+          <a class="cm-primary cm-login-go" href="${LOGIN}" target="_blank" rel="noopener">${ICON('log-in')}Iniciar sesión en GitHub</a>
         </div>
       </div>
       <div class="cm-toast" role="status" aria-live="polite"></div>`;
@@ -227,11 +243,19 @@
     });
 
     // ---- Mode ----
+    // Sign-in reminder: shown the first time comment mode is turned on in this browser
+    const login = $('.cm-login'), SEEN = 'ssot-comentarios:login-visto';
+    const seen = () => { try { return localStorage.getItem(SEEN) === '1'; } catch (e) { return false; } };
+    const closeLogin = () => { login.style.display = 'none'; try { localStorage.setItem(SEEN, '1'); } catch (e) {} };
+    $('.cm-login-ok').addEventListener('click', closeLogin);
+    $('.cm-login-go').addEventListener('click', closeLogin);
+
     const setMode = v => {
       on = v; document.documentElement.classList.toggle('cm-on', v);
       fab.setAttribute('aria-pressed', String(v));
       fab.querySelector('span').textContent = v ? 'Salir de comentarios' : 'Comentar';
-      if (v) render(); else { hl.style.display = 'none'; closePop(); closeNote(); }
+      if (v) { render(); if (!seen()) login.style.display = 'block'; }
+      else { hl.style.display = 'none'; closePop(); closeNote(); login.style.display = 'none'; }
     };
     const closePop = () => { pop.style.display = 'none'; ta.value = ''; send.disabled = true; picked = null; if (draft) { draft = null; render(); } };
     const box = el => { const r = el.getBoundingClientRect(); Object.assign(hl.style, { display: 'block', left: r.left - 4 + 'px', top: r.top - 4 + 'px', width: r.width + 8 + 'px', height: r.height + 8 + 'px' }); };
@@ -291,7 +315,7 @@
       closePop(); hl.style.display = 'none'; render();
       showToast(w === null
         ? `${ICON('triangle-alert')}<span>El navegador ha bloqueado la pestaña nueva. <a href="${url}" target="_blank" rel="noopener">Abre GitHub aquí</a> para enviar tu comentario.</span>`
-        : `${ICON('circle-check')}<span>GitHub se ha abierto en otra pestaña. Pulsa «Create» allí para enviar tu comentario.</span>`, w === null ? 12000 : 6000);
+        : `${ICON('circle-check')}<span>GitHub se ha abierto en otra pestaña. Pulsa «Create» allí para enviar tu comentario. ¿Ves «Page not found»? <a href="${loginTo(url)}" target="_blank" rel="noopener">Inicia sesión en GitHub</a> y volverás a tu comentario.</span>`, w === null ? 12000 : 10000);
     });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
