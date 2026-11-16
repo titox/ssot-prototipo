@@ -311,7 +311,8 @@
       // Keep the mark: the draft becomes a saved comment
       const list = load(); list.push({ ...draft, id: 'c' + Date.now(), text, title, what: picked.what, at: Date.now() }); save(list);
       draft = null;
-      const w = window.open(url, '_blank', 'noopener');
+      // No 'noopener' feature: with it, window.open always returns null and we couldn't tell a blocked tab
+      const w = window.open(url, '_blank'); if (w) w.opener = null;
       closePop(); hl.style.display = 'none'; render();
       showToast(w === null
         ? `${ICON('triangle-alert')}<span>El navegador ha bloqueado la pestaña nueva. <a href="${url}" target="_blank" rel="noopener">Abre GitHub aquí</a> para enviar tu comentario.</span>`
